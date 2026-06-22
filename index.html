@@ -338,12 +338,57 @@
             }
         }
 
-        /* ─── COMPACT LINE GRID ─── */
-        #app #line-grid {
+        /* ─── NAV ─── */
+        #app #nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 8px 12px 6px;
+        }
+        #app .nav-btn {
+            flex: 1;
+            min-width: calc(50% - 4px);
+            padding: 6px 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        #app .nav-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        #app .nav-btn.role-restricted {
+            opacity: .5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* ─── MAIN ─── */
+        #app #main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 16px 80px;
+        }
+        #app #main::-webkit-scrollbar {
+            width: 4px;
+        }
+        #app #main::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        /* ─── LINE GRID (moved inside board-view) ─── */
+        #app #board-view #line-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             gap: 4px;
-            padding: 8px 12px 0;
+            padding: 8px 0 8px 0;
         }
         #app .line-card {
             border-radius: 8px;
@@ -396,51 +441,6 @@
         #app .line-card.crit .ldot {
             background: var(--critical);
             animation: pulse 1s infinite;
-        }
-
-        /* ─── NAV ─── */
-        #app #nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            padding: 8px 12px 6px;
-        }
-        #app .nav-btn {
-            flex: 1;
-            min-width: calc(50% - 4px);
-            padding: 6px 4px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--surface2);
-            color: var(--muted);
-            font-size: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all .15s;
-        }
-        #app .nav-btn.active {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #fff;
-        }
-        #app .nav-btn.role-restricted {
-            opacity: .5;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        /* ─── MAIN ─── */
-        #app #main {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 16px 80px;
-        }
-        #app #main::-webkit-scrollbar {
-            width: 4px;
-        }
-        #app #main::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 2px;
         }
 
         /* ─── FILTERS ─── */
@@ -1537,9 +1537,9 @@
             #app .count-pill .num {
                 font-size: 13px;
             }
-            #app #line-grid {
+            #app #board-view #line-grid {
                 gap: 3px;
-                padding: 6px 8px 0;
+                padding: 6px 0 6px 0;
             }
             #app .line-card .lname {
                 font-size: 10px;
@@ -1634,8 +1634,6 @@
             </div>
         </div>
 
-        <div id="line-grid"></div>
-
         <div id="nav">
             <button class="nav-btn active" id="btn-board">📋 Tasks</button>
             <button class="nav-btn" id="btn-add">➕ Log Issue</button>
@@ -1649,6 +1647,8 @@
         <div id="main">
             <!-- Board View -->
             <div id="board-view">
+                <!-- LINE GRID moved here -->
+                <div id="line-grid"></div>
                 <div id="filters">
                     <select class="filter-sel" id="fl"><option value="">All Lines</option><option>L1</option><option>L2</option><option>L3</option><option>L4</option><option>L5</option><option>L6</option></select>
                     <select class="filter-sel" id="fp"><option value="">All Priority</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
@@ -2381,9 +2381,12 @@
                 document.getElementById('critical-num').textContent = crit; } else cb.style.display = 'none';
         }
 
+        // ─── UPDATE LINE GRID (now inside board-view) ─────────────────────
         function updateLineGrid() {
             var arr = taskArray();
-            document.getElementById('line-grid').innerHTML = LINES.map(function(l) {
+            var grid = document.getElementById('line-grid');
+            if (!grid) return;
+            grid.innerHTML = LINES.map(function(l) {
                 var lt = arr.filter(function(t) { return t.line === l && t.status !== 'Resolved'; });
                 var cls = lt.some(function(t) { return t.priority === 'Critical'; }) ? 'crit' :
                     lt.some(function(t) { return t.priority === 'High'; }) ? 'hi' :
@@ -3410,7 +3413,7 @@
             checkUsersExist();
         }
 
-        console.log('✅ SMT Report Center – "Loc" input shrunk to 50px, more space for defect name.');
+        console.log('✅ SMT Report Center – Line grid moved to Tasks tab.');
     </script>
 </body>
 </html>
