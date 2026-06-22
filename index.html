@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#0a0a0f" />
     <title>SMT Report Center</title>
     <style>
+        /* ── all styles (full, same as before) ── */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -1699,6 +1700,28 @@
         var CAT_ICON = { 'Quality Issue': '🔍', 'Equipment Fault': '⚙️', 'Process Issue': '📋', 'Technician Task': '👷',
             'Preventive Maint.': '🛠️' };
 
+        // ─── SESSION PERSISTENCE ──────────────────────────────────────────
+        function saveUser(user) {
+            try { localStorage.setItem('smt_user', JSON.stringify(user)); } catch (e) {}
+        }
+
+        function loadStoredUser() {
+            try {
+                var data = localStorage.getItem('smt_user');
+                if (data) {
+                    var user = JSON.parse(data);
+                    if (user && user.name && user.badge) {
+                        return user;
+                    }
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        function clearStoredUser() {
+            try { localStorage.removeItem('smt_user'); } catch (e) {}
+        }
+
         // ─── HELPERS ─────────────────────────────────────────────────────────
         function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;'); }
@@ -1880,6 +1903,8 @@
         });
 
         function loginSuccess() {
+            // Save user to localStorage
+            saveUser(currentUser);
             loginOverlay.classList.add('hidden');
             app.classList.add('show');
             userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
@@ -1892,6 +1917,7 @@
         // ─── LOGOUT ──────────────────────────────────────────────────────────
         function logout() {
             currentUser = null;
+            clearStoredUser();
             loginOverlay.classList.remove('hidden');
             app.classList.remove('show');
             loginBtn.disabled = false;
@@ -2797,8 +2823,6 @@
         }
 
         // ─── EXPORT FUNCTIONS ───────────────────────────────────────────────
-        // (identical to previous working version – included)
-
         document.getElementById('btn-export-issues').addEventListener('click', function() {
             if (!can('export')) { showToast('Permission denied'); return; }
             var range = getDateRange('exp-from', 'exp-to');
@@ -2998,8 +3022,31 @@
         });
 
         // ─── STARTUP ──────────────────────────────────────────────────────────
-        checkUsersExist();
-        console.log('✅ SMT Report Center – CSS fully restored, grid working, task body open by default.');
+
+        // First, check if we have a stored user
+        var stored = loadStoredUser();
+        if (stored) {
+            // Verify with Firebase
+            usersRef.child(stored.badge).once('value').then(function(snap) {
+                var data = snap.val();
+                if (data && data.name && data.name.toLowerCase() === stored.name.toLowerCase()) {
+                    currentUser = { badge: stored.badge, name: data.name, role: data.role || 'technician' };
+                    loginSuccess();
+                } else {
+                    // stored user invalid, clear and show login
+                    clearStoredUser();
+                    checkUsersExist();
+                }
+            }).catch(function() {
+                clearStoredUser();
+                checkUsersExist();
+            });
+        } else {
+            // No stored user – show login
+            checkUsersExist();
+        }
+
+        console.log('✅ SMT Report Center – Session persistence enabled; refresh keeps you logged in.');
     </script>
 </body>
 </html>
