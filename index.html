@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#0a0a0f" />
     <title>SMT Control Center</title>
     <style>
-        /* ── all styles (full version from earlier) ── */
+        /* ── all styles identical to the working version ── */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -179,7 +179,7 @@
             background: #15803d;
         }
 
-        /* ── APP (full styles, same as before) ── */
+        /* ── APP ── */
         #app {
             display: none;
             flex-direction: column;
@@ -188,6 +188,7 @@
         #app.show {
             display: flex;
         }
+
         #app #sync-bar {
             display: flex;
             align-items: center;
@@ -223,6 +224,8 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 6px;
         }
         #app .header-title {
             font-size: 20px;
@@ -243,6 +246,7 @@
             display: flex;
             gap: 8px;
             align-items: center;
+            flex-wrap: wrap;
         }
         #app .count-pill {
             background: var(--surface2);
@@ -277,6 +281,63 @@
             padding: 3px 10px;
             animation: pulse 1.2s infinite;
         }
+
+        /* ── NEW: visible logout button ── */
+        #app .logout-btn-visible {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--critical);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: all .15s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        #app .logout-btn-visible:hover {
+            background: var(--critical);
+            color: #fff;
+            border-color: var(--critical);
+        }
+
+        /* ── user avatar (still there for name/role) ── */
+        #app .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        #app .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: default;
+            flex-shrink: 0;
+            border: 2px solid transparent;
+        }
+        #app .user-name-tag {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 500;
+            display: none;
+        }
+        @media (min-width: 380px) {
+            #app .user-name-tag {
+                display: inline;
+            }
+        }
+
+        /* ── rest of styles (board, cards, forms, etc.) unchanged ── */
         #app #line-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -376,6 +437,8 @@
             background: var(--border);
             border-radius: 2px;
         }
+
+        /* ── filters, task cards, forms, etc. (full, same as before) ── */
         #app #filters {
             display: flex;
             gap: 6px;
@@ -505,16 +568,6 @@
             font-size: 11px;
             color: var(--muted);
             margin-top: 3px;
-        }
-        #app .task-delete {
-            background: none;
-            border: none;
-            color: var(--muted);
-            font-size: 20px;
-            line-height: 1;
-            cursor: pointer;
-            padding: 0 0 0 4px;
-            flex-shrink: 0;
         }
         #app .task-body {
             display: none;
@@ -1308,88 +1361,6 @@
             font-size: 13px;
         }
 
-        /* ── User menu ── */
-        #app .user-menu {
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        #app .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--accent);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            flex-shrink: 0;
-            border: 2px solid transparent;
-            transition: border .2s;
-        }
-        #app .user-avatar:hover {
-            border-color: var(--accent2);
-        }
-        #app .user-dropdown {
-            position: absolute;
-            top: 38px;
-            right: 0;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 8px 0;
-            min-width: 180px;
-            display: none;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, .6);
-            z-index: 200;
-        }
-        #app .user-dropdown.open {
-            display: block;
-        }
-        #app .user-dropdown-item {
-            padding: 8px 16px;
-            font-size: 12px;
-            color: var(--text);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background .1s;
-        }
-        #app .user-dropdown-item:hover {
-            background: var(--surface2);
-        }
-        #app .user-dropdown-item .role-badge {
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            background: var(--surface2);
-            padding: 2px 8px;
-            border-radius: 20px;
-            color: var(--accent2);
-            border: 1px solid var(--border);
-        }
-        #app .user-dropdown-divider {
-            height: 1px;
-            background: var(--border);
-            margin: 4px 8px;
-        }
-        #app .user-dropdown-item.logout {
-            color: var(--critical);
-        }
-        #app .user-dropdown-item.logout:hover {
-            background: #450a0a;
-        }
-        #app .user-email {
-            font-size: 10px;
-            color: var(--muted);
-            margin-top: 2px;
-        }
-
         /* ── User management ── */
         #app .user-mgmt-card {
             background: var(--surface);
@@ -1452,6 +1423,9 @@
             #login-box {
                 padding: 24px 18px;
             }
+            #app .user-name-tag {
+                display: none !important;
+            }
         }
     </style>
 </head>
@@ -1492,6 +1466,7 @@
             <span id="sync-label">Connecting…</span>
             <span style="margin-left:auto" id="sync-time"></span>
         </div>
+
         <div id="header">
             <div class="header-top">
                 <div>
@@ -1505,17 +1480,8 @@
                     <div class="count-pill done"><div class="num" id="done-count">0</div><div class="lbl">Done</div></div>
                     <div class="user-menu">
                         <div class="user-avatar" id="user-avatar">U</div>
-                        <div class="user-dropdown" id="user-dropdown">
-                            <div class="user-dropdown-item" style="pointer-events:none">
-                                <span id="dropdown-name" style="font-weight:600">User</span>
-                            </div>
-                            <div class="user-dropdown-item" style="pointer-events:none;font-size:11px;color:var(--muted);padding-top:0">
-                                Badge: <span id="dropdown-badge" class="role-badge">0000</span> ·
-                                Role: <span id="dropdown-role" class="role-badge">technician</span>
-                            </div>
-                            <div class="user-dropdown-divider"></div>
-                            <div class="user-dropdown-item logout" id="logout-btn">🚪 Sign Out</div>
-                        </div>
+                        <span class="user-name-tag" id="user-name-tag"></span>
+                        <button class="logout-btn-visible" id="logout-btn-visible">🚪 Logout</button>
                     </div>
                 </div>
             </div>
@@ -1534,6 +1500,7 @@
         </div>
 
         <div id="main">
+            <!-- Board View -->
             <div id="board-view">
                 <div id="filters">
                     <select class="filter-sel" id="fl"><option value="">All Lines</option><option>L1</option><option>L2</option><option>L3</option><option>L4</option><option>L5</option><option>L6</option></select>
@@ -1544,6 +1511,7 @@
                 <div id="task-list"><div id="loading"><div class="spinner"></div>Connecting…</div></div>
             </div>
 
+            <!-- Add View -->
             <div id="add-view">
                 <div class="form-card">
                     <div class="form-title">🆕 Log New Issue / Task</div>
@@ -1565,6 +1533,7 @@
                 </div>
             </div>
 
+            <!-- Summary View -->
             <div id="summary-view">
                 <div class="summary-card"><div class="summary-title">Issues by Line</div><div id="sum-lines"></div></div>
                 <div class="summary-card"><div class="summary-title">Open by Category</div><div id="sum-cats"></div></div>
@@ -1583,10 +1552,12 @@
                 </div>
             </div>
 
+            <!-- Archive View -->
             <div id="archive-view" style="display:none">
                 <div id="archive-list"></div>
             </div>
 
+            <!-- Handover View -->
             <div id="handover-view" style="display:none">
                 <div class="form-card" id="handover-form-card">
                     <div class="form-title">🔄 Shift Handover Report</div>
@@ -1621,6 +1592,7 @@
                 </div>
             </div>
 
+            <!-- Line Report View -->
             <div id="linereport-view" style="display:none">
                 <div class="form-card">
                     <div class="form-title">📊 Line Quality &amp; CT Report</div>
@@ -1675,7 +1647,7 @@
                 </div>
             </div>
 
-            <!-- ─── USERS VIEW ─── -->
+            <!-- Users View -->
             <div id="users-view" style="display:none">
                 <div class="form-card user-mgmt-card">
                     <div class="form-title">👤 Add New User</div>
@@ -1851,11 +1823,8 @@
 
         var app = document.getElementById('app');
         var userAvatar = document.getElementById('user-avatar');
-        var userDropdown = document.getElementById('user-dropdown');
-        var dropdownName = document.getElementById('dropdown-name');
-        var dropdownBadge = document.getElementById('dropdown-badge');
-        var dropdownRole = document.getElementById('dropdown-role');
-        var logoutBtn = document.getElementById('logout-btn');
+        var userNameTag = document.getElementById('user-name-tag');
+        var logoutBtnVisible = document.getElementById('logout-btn-visible');
 
         // ─── FIREBASE REFERENCES ────────────────────────────────────────────
         var usersRef = db.ref('users');
@@ -1941,18 +1910,15 @@
             loginOverlay.classList.add('hidden');
             app.classList.add('show');
             userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
-            dropdownName.textContent = currentUser.name;
-            dropdownBadge.textContent = currentUser.badge;
-            dropdownRole.textContent = currentUser.role;
+            userNameTag.textContent = currentUser.name;
             applyRoleUI();
             initApp();
             renderAll();
         }
 
         // ─── LOGOUT ──────────────────────────────────────────────────────────
-        logoutBtn.addEventListener('click', function() {
+        function logout() {
             currentUser = null;
-            userDropdown.classList.remove('open');
             loginOverlay.classList.remove('hidden');
             app.classList.remove('show');
             loginBtn.disabled = false;
@@ -1961,7 +1927,14 @@
             loginBadge.value = '';
             loginError.textContent = '';
             checkUsersExist();
-        });
+            showToast('Signed out');
+        }
+
+        // Visible logout button
+        logoutBtnVisible.addEventListener('click', logout);
+
+        // Also keep the dropdown logout for consistency (optional)
+        // We'll add it to the dropdown in the header if needed, but we already have the visible button.
 
         // ─── APPLY ROLE UI ──────────────────────────────────────────────────
         function applyRoleUI() {
@@ -1970,7 +1943,6 @@
             var isTech = r === 'technician';
             document.getElementById('btn-users').style.display = isAdmin ? '' : 'none';
             document.getElementById('btn-archive').style.display = isTech ? 'none' : '';
-            // Re-apply class restrictions on existing elements (handled in render)
         }
 
         // ─── INIT APP ──────────────────────────────────────────────────────
@@ -2363,7 +2335,7 @@
             applyRoleUI();
         }
 
-        // ─── RENDER HANDOVER (ownership + edit limit) ──────────────────────
+        // ─── RENDER HANDOVER ──────────────────────────────────────────────
         function renderHandover() {
             var h = document.getElementById('h-shift');
             if (h) h.value = getShift();
@@ -2486,7 +2458,7 @@
             showToast('Edit cancelled');
         }
 
-        // ─── RENDER LINE REPORT (ownership + edit limit) ──────────────────
+        // ─── RENDER LINE REPORT ────────────────────────────────────────────
         function renderLineReport() {
             var lr = document.getElementById('lr-shift');
             if (lr) lr.value = getShift();
@@ -2862,12 +2834,208 @@
         }
 
         // ─── EXPORT FUNCTIONS ───────────────────────────────────────────────
-        // (identical to previous versions – omitted for brevity, but fully functional)
-        // For space, we include a summary – they are the same as earlier.
+
+        document.getElementById('btn-export-issues').addEventListener('click', function() {
+            if (!can('export')) { showToast('Permission denied'); return; }
+            var range = getDateRange('exp-from', 'exp-to');
+            var allTasks = Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); });
+            var filtered = allTasks.filter(function(t) {
+                if (t.archived) return false;
+                var d = t.created ? new Date(t.created) : null;
+                if (!d) return true;
+                return d >= range.from && d <= range.to;
+            });
+            if (!filtered.length) { showToast('No issues in this date range'); return; }
+            var order = ['Critical', 'High', 'Medium', 'Low'];
+            filtered.sort(function(a, b) { return order.indexOf(a.priority) - order.indexOf(b.priority); });
+            var rows = filtered.map(function(t) {
+                return {
+                    'Date Logged': fmtDate(t.created),
+                    'Line': t.line || '',
+                    'Shift': t.shift || '',
+                    'Category': t.category || '',
+                    'Priority': t.priority || '',
+                    'Status': t.status || '',
+                    'Title': t.title || '',
+                    'Assigned To': t.assignee || '',
+                    'Time Found': t.time || '',
+                    'Notes': t.note || ''
+                };
+            });
+            var ws = XLSX.utils.json_to_sheet(rows);
+            autoWidth(ws, rows);
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Issues');
+            XLSX.writeFile(wb, 'SMT_Issues_' + todayStr() + '.xlsx');
+            showToast('Exported ' + rows.length + ' issues ✓');
+        });
+
+        document.getElementById('btn-export-summary').addEventListener('click', function() {
+            if (!can('export')) { showToast('Permission denied'); return; }
+            var range = getDateRange('exp-from', 'exp-to');
+            var allTasks = Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); });
+            var filtered = allTasks.filter(function(t) {
+                if (t.archived) return false;
+                var d = t.created ? new Date(t.created) : null;
+                if (!d) return true;
+                return d >= range.from && d <= range.to;
+            });
+            var wb = XLSX.utils.book_new();
+            // By Line
+            var lineRows = LINES.map(function(l) {
+                var lt = filtered.filter(function(t) { return t.line === l; });
+                var row = { 'Line': l, 'Total Issues': lt.length };
+                ['Critical', 'High', 'Medium', 'Low'].forEach(function(p) { row[p] = lt.filter(function(t) {
+                        return t.priority === p; }).length; });
+                ['Open', 'In Progress', 'Pending Parts', 'Resolved'].forEach(function(s) { row[s] = lt
+                        .filter(function(t) { return t.status === s; }).length; });
+                return row;
+            });
+            var ws1 = XLSX.utils.json_to_sheet(lineRows);
+            autoWidth(ws1, lineRows);
+            XLSX.utils.book_append_sheet(wb, ws1, 'By Line');
+            // By Category
+            var catRows = CATS.map(function(c) {
+                var ct = filtered.filter(function(t) { return t.category === c; });
+                return { 'Category': c, 'Total': ct.length, 'Open': ct.filter(function(t) { return t
+                        .status === 'Open'; }).length, 'In Progress': ct.filter(function(t) { return t
+                        .status === 'In Progress'; }).length, 'Resolved': ct.filter(function(t) { return t
+                        .status === 'Resolved'; }).length };
+            });
+            var ws2 = XLSX.utils.json_to_sheet(catRows);
+            autoWidth(ws2, catRows);
+            XLSX.utils.book_append_sheet(wb, ws2, 'By Category');
+            // By Shift
+            var shiftRows = ['Shift 1 (7AM-3PM)', 'Shift 2 (3PM-11PM)', 'Shift 3 (11PM-7AM)'].map(function(s) {
+                var st = filtered.filter(function(t) { return t.shift === s; });
+                var row = { 'Shift': s, 'Total Issues': st.length };
+                ['Critical', 'High', 'Medium', 'Low'].forEach(function(p) { row[p] = st.filter(function(t) {
+                        return t.priority === p; }).length; });
+                return row;
+            });
+            var ws3 = XLSX.utils.json_to_sheet(shiftRows);
+            autoWidth(ws3, shiftRows);
+            XLSX.utils.book_append_sheet(wb, ws3, 'By Shift');
+            // By Technician
+            var techMap = {};
+            filtered.forEach(function(t) {
+                var a = t.assignee || 'Unassigned';
+                if (!techMap[a]) techMap[a] = { name: a, total: 0, resolved: 0, critical: 0 };
+                techMap[a].total++;
+                if (t.status === 'Resolved') techMap[a].resolved++;
+                if (t.priority === 'Critical') techMap[a].critical++;
+            });
+            var techRows = Object.values(techMap).sort(function(a, b) { return b.total - a.total; }).map(function(
+                t) {
+                return { 'Technician': t.name, 'Total Tasks': t.total, 'Resolved': t.resolved,
+                    'Critical Issues': t.critical, 'Resolution Rate': t.total > 0 ? Math.round(t
+                        .resolved / t.total * 100) + '%' : '0%' };
+            });
+            var ws4 = XLSX.utils.json_to_sheet(techRows.length ? techRows : [{ Note: 'No data in range' }]);
+            autoWidth(ws4, techRows.length ? techRows : [{ Note: 'No data' }]);
+            XLSX.utils.book_append_sheet(wb, ws4, 'By Technician');
+            XLSX.writeFile(wb, 'SMT_Summary_' + todayStr() + '.xlsx');
+            showToast('Summary exported — 4 sheets ✓');
+        });
+
+        document.getElementById('btn-export-handover').addEventListener('click', function() {
+            if (!can('export')) { showToast('Permission denied'); return; }
+            var range = getDateRange('hexp-from', 'hexp-to');
+            var arr = Object.keys(handovers).map(function(id) { return Object.assign({}, handovers[id], { _id: id }); });
+            var filtered = arr.filter(function(r) {
+                var d = r.created ? new Date(r.created) : null;
+                if (!d) return true;
+                return d >= range.from && d <= range.to;
+            });
+            if (!filtered.length) { showToast('No handover reports in this date range'); return; }
+            filtered.sort(function(a, b) { return (b.created || 0) - (a.created || 0); });
+            var rows = filtered.map(function(r) {
+                var ls = r.lineStatus || {};
+                return {
+                    'Submitted At': fmtDate(r.created),
+                    'Production Date': r.date || '',
+                    'Submitted By': r.name || '',
+                    'Role': r.role || '',
+                    'Shift': r.shift || '',
+                    'L1 Status': ls.L1 || '',
+                    'L2 Status': ls.L2 || '',
+                    'L3 Status': ls.L3 || '',
+                    'L4 Status': ls.L4 || '',
+                    'L5 Status': ls.L5 || '',
+                    'L6 Status': ls.L6 || '',
+                    'Open Issues Carried': r.openIssues || '',
+                    'Equipment Notes': r.equipment || '',
+                    'Notes for Next Shift': r.notes || ''
+                };
+            });
+            var ws = XLSX.utils.json_to_sheet(rows);
+            autoWidth(ws, rows);
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Handover Reports');
+            XLSX.writeFile(wb, 'SMT_Handover_' + todayStr() + '.xlsx');
+            showToast('Exported ' + filtered.length + ' handover reports ✓');
+        });
+
+        document.getElementById('btn-export-linereport').addEventListener('click', function() {
+            if (!can('export')) { showToast('Permission denied'); return; }
+            var range = getDateRange('lrexp-from', 'lrexp-to');
+            var arr = Object.keys(lineReports).map(function(id) { return Object.assign({}, lineReports[id], { _id: id }); });
+            var filtered = arr.filter(function(r) {
+                var d = r.created ? new Date(r.created) : null;
+                if (!d) return true;
+                return d >= range.from && d <= range.to;
+            });
+            if (!filtered.length) { showToast('No reports in this date range'); return; }
+            filtered.sort(function(a, b) { return (b.created || 0) - (a.created || 0); });
+            var wb = XLSX.utils.book_new();
+            // Quality
+            var qRows = filtered.map(function(r) {
+                return {
+                    'Submitted At': fmtDate(r.created),
+                    'Last Edited': r.lastEdited ? fmtDate(r.lastEdited) : '',
+                    'Edit Count': r.editCount || 0,
+                    'Production Date': r.date || '',
+                    'Technician': r.name || '',
+                    'Line': r.line || '',
+                    'Shift': r.shift || '',
+                    'Model': r.model || '',
+                    'Top 3 Issues': r.issues || '',
+                    'Root Cause': r.rootcause || '',
+                    'Corrective Action': r.action || ''
+                };
+            });
+            var ws1 = XLSX.utils.json_to_sheet(qRows);
+            autoWidth(ws1, qRows);
+            XLSX.utils.book_append_sheet(wb, ws1, 'Quality Issues');
+            // CT
+            var ctRows = filtered.map(function(r) {
+                var ct = r.ct || {};
+                return {
+                    'Submitted At': fmtDate(r.created),
+                    'Last Edited': r.lastEdited ? fmtDate(r.lastEdited) : '',
+                    'Edit Count': r.editCount || 0,
+                    'Production Date': r.date || '',
+                    'Technician': r.name || '',
+                    'Line': r.line || '',
+                    'Shift': r.shift || '',
+                    'Model': r.model || '',
+                    'Printing (s)': ct.Printing || '',
+                    'SPI (s)': ct.SPI || '',
+                    'P&P 1 (s)': ct.PP1 || '',
+                    'P&P 2 (s)': ct.PP2 || '',
+                    'P&P 3 (s)': ct.PP3 || ''
+                };
+            });
+            var ws2 = XLSX.utils.json_to_sheet(ctRows);
+            autoWidth(ws2, ctRows);
+            XLSX.utils.book_append_sheet(wb, ws2, 'Machine CT');
+            XLSX.writeFile(wb, 'SMT_LineReport_' + todayStr() + '.xlsx');
+            showToast('Exported ' + filtered.length + ' reports — 2 sheets ✓');
+        });
 
         // ─── STARTUP ──────────────────────────────────────────────────────────
         checkUsersExist();
-        console.log('✅ SMT Control – Login fixed. Only owners can edit their reports (max 3 edits).');
+        console.log('✅ SMT Control – Logout button added. Only owners can edit their reports (max 3 edits).');
     </script>
 </body>
 </html>
