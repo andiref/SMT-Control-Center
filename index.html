@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#0a0a0f" />
     <title>SMT Control Center</title>
     <style>
-        /* ── reset & vars ── */
+        /* ── reset & vars ── (unchanged) ── */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -70,7 +70,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            transition: opacity .4s;
+            transition: opacity .4s ease;
         }
         #login-overlay.hidden {
             opacity: 0;
@@ -88,7 +88,7 @@
         #login-box .logo {
             font-size: 28px;
             font-weight: 800;
-            letter-spacing: -.5px;
+            letter-spacing: -0.5px;
             color: #fff;
             text-align: center;
             margin-bottom: 4px;
@@ -160,29 +160,26 @@
             font-size: 10px;
             color: var(--muted);
             text-align: center;
-            margin-top: 12px;
+            margin-top: 8px;
             opacity: .7;
         }
-        .login-loading {
+        .login-create-admin {
+            margin-top: 16px;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
             display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 6px 0;
         }
-        .login-loading.show {
-            display: flex;
+        .login-create-admin.show {
+            display: block;
         }
-        .spinner-sm {
-            width: 18px;
-            height: 18px;
-            border: 2px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin .7s linear infinite;
+        .login-create-admin .login-btn {
+            background: #16a34a;
+        }
+        .login-create-admin .login-btn:hover {
+            background: #15803d;
         }
 
-        /* ── APP (hidden until login) ── */
+        /* ── APP (unchanged except new user nav) ── */
         #app {
             display: none;
             flex-direction: column;
@@ -192,7 +189,11 @@
             display: flex;
         }
 
-        /* ── existing app styles (unchanged) ── */
+        /* ── all existing styles from previous version ── */
+        /* (the full style block is huge; we keep everything under #app as before) */
+        /* For brevity, we assume the styles from the original are preserved.
+           We just add a few new ones for user management. */
+
         #app #sync-bar {
             display: flex;
             align-items: center;
@@ -232,7 +233,7 @@
         #app .header-title {
             font-size: 20px;
             font-weight: 800;
-            letter-spacing: -.5px;
+            letter-spacing: -0.5px;
             color: #fff;
         }
         #app .header-sub {
@@ -1072,6 +1073,39 @@
             padding: 40px 16px;
             color: var(--muted);
         }
+        #app .quality-line-block {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }
+        #app .quality-line-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent2);
+            margin-bottom: 8px;
+        }
+        #app .quality-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
+        #app .quality-field label {
+            font-size: 10px;
+            color: var(--muted);
+            margin-bottom: 3px;
+            display: block;
+        }
+        #app .quality-field input,
+        #app .quality-field textarea {
+            font-size: 12px;
+            padding: 7px 10px;
+        }
+        #app .quality-field textarea {
+            height: 54px;
+            resize: none;
+        }
         #app .ct-table {
             border: 1px solid var(--border);
             border-radius: 10px;
@@ -1284,6 +1318,8 @@
             color: var(--muted);
             font-size: 13px;
         }
+
+        /* ── User menu ── */
         #app .user-menu {
             position: relative;
             display: flex;
@@ -1317,7 +1353,7 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 8px 0;
-            min-width: 200px;
+            min-width: 180px;
             display: none;
             box-shadow: 0 12px 40px rgba(0, 0, 0, .6);
             z-index: 200;
@@ -1365,110 +1401,49 @@
             margin-top: 2px;
         }
 
-        /* Admin modal */
-        #admin-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 600;
-            background: rgba(0, 0, 0, .7);
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        #admin-modal.show {
-            display: flex;
-        }
-        #admin-modal-box {
+        /* ── User management (admin only) ── */
+        #app .user-mgmt-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 420px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        #admin-modal-box .modal-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #fff;
+            border-radius: var(--radius);
+            padding: 16px;
             margin-bottom: 12px;
         }
-        #admin-modal-box .user-list {
-            margin: 12px 0;
-        }
-        .admin-user-item {
+        #app .user-mgmt-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 0;
+            padding: 8px 0;
             border-bottom: 1px solid var(--border);
             font-size: 13px;
         }
-        .admin-user-item .badge {
+        #app .user-mgmt-item:last-child {
+            border-bottom: none;
+        }
+        #app .user-mgmt-item .badge-role {
+            font-size: 10px;
             font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
             color: var(--accent2);
         }
-        .admin-user-item .del-btn {
+        #app .user-mgmt-item .delete-user {
             background: none;
             border: none;
             color: var(--critical);
             cursor: pointer;
-            font-size: 14px;
+            font-size: 16px;
             padding: 0 4px;
         }
-        #admin-modal-box .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        #admin-modal-box .form-group {
-            margin-bottom: 6px;
-        }
-        #admin-modal-box .form-group label {
-            font-size: 10px;
-            color: var(--muted);
-        }
-        #admin-modal-box .form-group input,
-        #admin-modal-box .form-group select {
-            width: 100%;
-            background: var(--surface2);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 8px 10px;
-            font-size: 12px;
-        }
-        #admin-modal-box .add-btn {
-            width: 100%;
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 6px;
-        }
-        #admin-modal-box .add-btn:hover {
-            background: #2563eb;
-        }
-        #admin-modal-box .close-btn {
-            background: var(--surface2);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-top: 12px;
-            width: 100%;
+        #app .user-mgmt-item .delete-user:hover {
+            color: #ff6b6b;
         }
 
-        @media (max-width:400px) {
+        /* ── Responsive tweaks ── */
+        @media (max-width: 400px) {
             #app .header-title {
                 font-size: 17px;
             }
@@ -1499,29 +1474,44 @@
         <div id="login-box">
             <div class="logo">⚙️ SMT Control</div>
             <div class="sub">Shift &amp; Quality · <span>Login</span></div>
+
             <form id="login-form" autocomplete="off">
                 <div class="login-field">
                     <label>Your Name</label>
                     <input id="login-name" type="text" placeholder="e.g. John Doe" required />
                 </div>
                 <div class="login-field">
-                    <label>Badge / Employee ID</label>
+                    <label>Badge ID</label>
                     <input id="login-badge" type="text" placeholder="e.g. 1234" required />
                 </div>
                 <div id="login-error" class="login-error"></div>
                 <button class="login-btn" id="login-btn" type="submit">Sign In →</button>
-                <div class="login-loading" id="login-loading">
-                    <div class="spinner-sm"></div>
-                    <span style="font-size:13px;color:var(--muted)">Verifying…</span>
-                </div>
             </form>
-            <div class="login-role-hint">Ask your admin for your badge number.</div>
+
+            <div class="login-role-hint">Contact admin for badge and role</div>
+
+            <!-- Create admin section (visible only when no users exist) -->
+            <div class="login-create-admin" id="create-admin-section">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-align:center">
+                    🔑 No users found — create the first admin account
+                </div>
+                <div class="login-field">
+                    <label>Admin Name</label>
+                    <input id="create-admin-name" type="text" placeholder="e.g. Admin" />
+                </div>
+                <div class="login-field">
+                    <label>Admin Badge</label>
+                    <input id="create-admin-badge" type="text" placeholder="e.g. 0000" />
+                </div>
+                <button class="login-btn" id="create-admin-btn" style="background:#16a34a">Create Admin →</button>
+                <div id="create-admin-error" class="login-error" style="margin-top:6px"></div>
+            </div>
         </div>
     </div>
 
     <!-- ─── APP ─── -->
     <div id="app">
-
+        <!-- Sync bar, header, line grid, nav, main… (all unchanged) -->
         <div id="sync-bar">
             <div class="sync-dot" id="sync-dot"></div>
             <span id="sync-label">Connecting…</span>
@@ -1540,16 +1530,16 @@
                     <div class="count-pill open"><div class="num" id="open-count">0</div><div class="lbl">Open</div></div>
                     <div class="count-pill done"><div class="num" id="done-count">0</div><div class="lbl">Done</div></div>
                     <div class="user-menu">
-                        <div class="user-avatar" id="user-avatar" title="User menu">U</div>
+                        <div class="user-avatar" id="user-avatar">U</div>
                         <div class="user-dropdown" id="user-dropdown">
                             <div class="user-dropdown-item" style="pointer-events:none">
                                 <span id="dropdown-name" style="font-weight:600">User</span>
                             </div>
                             <div class="user-dropdown-item" style="pointer-events:none;font-size:11px;color:var(--muted);padding-top:0">
-                                Badge: <span id="dropdown-badge">—</span> · Role: <span id="dropdown-role" class="role-badge">technician</span>
+                                Badge: <span id="dropdown-badge" class="role-badge">0000</span> ·
+                                Role: <span id="dropdown-role" class="role-badge">technician</span>
                             </div>
                             <div class="user-dropdown-divider"></div>
-                            <div class="user-dropdown-item" id="admin-manage-users" style="display:none;">👥 Manage Users</div>
                             <div class="user-dropdown-item logout" id="logout-btn">🚪 Sign Out</div>
                         </div>
                     </div>
@@ -1566,9 +1556,12 @@
             <button class="nav-btn" id="btn-handover">🔄 Handover</button>
             <button class="nav-btn" id="btn-summary">📈 Summary</button>
             <button class="nav-btn" id="btn-archive">📦 Archive</button>
+            <button class="nav-btn" id="btn-users" style="display:none">👥 Users</button>
         </div>
 
         <div id="main">
+            <!-- Board, Add, Summary, Archive, Handover, LineReport views – same as before -->
+            <!-- We'll keep all existing view IDs and content, just add a new Users view -->
             <div id="board-view">
                 <div id="filters">
                     <select class="filter-sel" id="fl"><option value="">All Lines</option><option>L1</option><option>L2</option><option>L3</option><option>L4</option><option>L5</option><option>L6</option></select>
@@ -1605,7 +1598,6 @@
                 <div class="summary-card"><div class="summary-title">Open by Category</div><div id="sum-cats"></div></div>
                 <div class="summary-card"><div class="summary-title">Open by Priority</div><div class="priority-grid" id="sum-priority"></div></div>
                 <div id="sum-unassigned"></div>
-
                 <div class="export-panel">
                     <div class="export-panel-title">⬇️ Export to Excel</div>
                     <div class="form-row" style="margin-bottom:8px">
@@ -1643,7 +1635,6 @@
                     <div class="form-group"><label>📝 Notes for Next Shift</label><textarea id="h-notes" placeholder="e.g. Monitor L5 paste weight every hour. New board model starts at 11PM."></textarea></div>
                     <button class="submit-btn" id="h-submit-btn" disabled>Submit Handover Report →</button>
                 </div>
-
                 <div style="margin-top:16px">
                     <div class="summary-title" style="padding:0 4px 8px">📜 Handover History</div>
                     <div class="export-panel" style="margin-bottom:12px">
@@ -1698,7 +1689,6 @@
                     </div>
                     <button class="submit-btn" id="lr-submit-btn" disabled>Submit Line Report →</button>
                 </div>
-
                 <div style="margin-top:16px">
                     <div class="summary-title" style="padding:0 4px 8px">📜 Line Report History</div>
                     <div class="export-panel" style="margin-bottom:12px">
@@ -1712,6 +1702,32 @@
                     <div id="linereport-history"></div>
                 </div>
             </div>
+
+            <!-- ─── NEW: USERS VIEW (admin only) ─── -->
+            <div id="users-view" style="display:none">
+                <div class="form-card user-mgmt-card">
+                    <div class="form-title">👤 Add New User</div>
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0"><label>Name</label><input id="new-user-name" type="text" placeholder="Full name" /></div>
+                        <div class="form-group" style="margin-bottom:0"><label>Badge ID</label><input id="new-user-badge" type="text" placeholder="e.g. 1234" /></div>
+                    </div>
+                    <div class="form-group"><label>Role</label>
+                        <select id="new-user-role">
+                            <option value="technician">Technician</option>
+                            <option value="supervisor">Supervisor</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button class="submit-btn" id="add-user-btn" style="background:#16a34a">➕ Add User</button>
+                    <div id="add-user-msg" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+                </div>
+
+                <div class="summary-card" style="margin-top:10px">
+                    <div class="summary-title">👥 Existing Users</div>
+                    <div id="user-list"></div>
+                </div>
+            </div>
+
         </div>
 
         <!-- Confirm Modal -->
@@ -1723,26 +1739,6 @@
                     <button class="confirm-no" id="confirm-no">Cancel</button>
                     <button class="confirm-yes" id="confirm-yes">Archive 📦</button>
                 </div>
-            </div>
-        </div>
-
-        <!-- Admin Modal (Manage Users) -->
-        <div id="admin-modal">
-            <div id="admin-modal-box">
-                <div class="modal-title">👥 Manage Users</div>
-                <div style="margin-bottom:8px;font-size:12px;color:var(--muted)">Add or remove users. Badge must be unique.</div>
-                <div class="form-row">
-                    <div class="form-group"><label>Badge (ID)</label><input id="admin-badge" type="text" placeholder="e.g. 1234" /></div>
-                    <div class="form-group"><label>Name</label><input id="admin-name" type="text" placeholder="Full name" /></div>
-                </div>
-                <div class="form-row" style="grid-template-columns:1fr 1fr;margin-bottom:6px;">
-                    <div class="form-group"><label>Role</label>
-                        <select id="admin-role"><option value="technician">Technician</option><option value="supervisor">Supervisor</option><option value="admin">Admin</option></select>
-                    </div>
-                    <div class="form-group" style="display:flex;align-items:flex-end;"><button class="add-btn" id="admin-add-btn">➕ Add User</button></div>
-                </div>
-                <div class="user-list" id="admin-user-list"></div>
-                <button class="close-btn" id="admin-close-btn">Close</button>
             </div>
         </div>
 
@@ -1769,14 +1765,9 @@
             appId: "1:468538505165:web:a491ecbcf5fd75b1a1f684"
         });
         var db = firebase.database();
-        var usersRef = db.ref('users');
-        var tasksRef = db.ref('smt_tasks');
-        var handoverRef = db.ref('smt_handovers');
-        var lineReportRef = db.ref('smt_linereports');
 
         // ─── STATE ──────────────────────────────────────────────────────────
         var currentUser = null; // { badge, name, role }
-        var users = {};
         var tasks = {};
         var handovers = {};
         var lineReports = {};
@@ -1793,7 +1784,7 @@
         var CAT_ICON = { 'Quality Issue': '🔍', 'Equipment Fault': '⚙️', 'Process Issue': '📋', 'Technician Task': '👷',
             'Preventive Maint.': '🛠️' };
 
-        // ─── ROLE PERMISSIONS ──────────────────────────────────────────────
+        // ─── ROLE HELPERS ────────────────────────────────────────────────────
         function getRole() { return currentUser ? currentUser.role : 'technician'; }
 
         function can(perm) {
@@ -1811,6 +1802,8 @@
             return false;
         }
 
+        function isAdmin() { return getRole() === 'admin'; }
+
         // ─── DOM REFS ──────────────────────────────────────────────────────
         var loginOverlay = document.getElementById('login-overlay');
         var loginForm = document.getElementById('login-form');
@@ -1818,7 +1811,12 @@
         var loginBadge = document.getElementById('login-badge');
         var loginBtn = document.getElementById('login-btn');
         var loginError = document.getElementById('login-error');
-        var loginLoading = document.getElementById('login-loading');
+        var createAdminSection = document.getElementById('create-admin-section');
+        var createAdminName = document.getElementById('create-admin-name');
+        var createAdminBadge = document.getElementById('create-admin-badge');
+        var createAdminBtn = document.getElementById('create-admin-btn');
+        var createAdminError = document.getElementById('create-admin-error');
+
         var app = document.getElementById('app');
         var userAvatar = document.getElementById('user-avatar');
         var userDropdown = document.getElementById('user-dropdown');
@@ -1826,165 +1824,171 @@
         var dropdownBadge = document.getElementById('dropdown-badge');
         var dropdownRole = document.getElementById('dropdown-role');
         var logoutBtn = document.getElementById('logout-btn');
-        var adminManageUsers = document.getElementById('admin-manage-users');
-        var adminModal = document.getElementById('admin-modal');
-        var adminCloseBtn = document.getElementById('admin-close-btn');
-        var adminAddBtn = document.getElementById('admin-add-btn');
-        var adminBadge = document.getElementById('admin-badge');
-        var adminName = document.getElementById('admin-name');
-        var adminRole = document.getElementById('admin-role');
-        var adminUserList = document.getElementById('admin-user-list');
 
-        // ─── USERS LISTENER ──────────────────────────────────────────────
-        usersRef.on('value', function(snap) {
-            users = snap.val() || {};
-            // If no users, create default admin
-            if (Object.keys(users).length === 0) {
-                usersRef.set({ '0000': { name: 'Admin', role: 'admin' } })
-                    .catch(function(err) { console.error('Failed to create default admin:', err); });
-                return;
-            }
-            // Update UI if admin modal open
-            if (adminModal.classList.contains('show')) renderUserList();
-            // If currentUser exists and is admin, show manage users button
-            if (currentUser && currentUser.role === 'admin') {
-                adminManageUsers.style.display = '';
-            } else {
-                adminManageUsers.style.display = 'none';
-            }
-        });
+        // ─── CHECK IF USERS EXIST ───────────────────────────────────────────
+        var usersRef = db.ref('users');
 
-        function renderUserList() {
-            var html = '';
-            Object.keys(users).forEach(function(badge) {
-                var u = users[badge];
-                html += '<div class="admin-user-item">' +
-                    '<span><span class="badge">' + badge + '</span> ' + u.name + ' <span class="role-badge" style="font-size:9px;">' +
-                    u.role + '</span></span>' +
-                    '<button class="del-btn" data-badge="' + badge + '">✕</button>' +
-                    '</div>';
-            });
-            adminUserList.innerHTML = html || '<div style="color:var(--muted);font-size:12px;">No users yet.</div>';
-            // Bind delete events
-            document.querySelectorAll('.admin-user-item .del-btn').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    var badge = btn.getAttribute('data-badge');
-                    if (badge === '0000') { showToast('Cannot delete default admin'); return; }
-                    if (confirm('Remove user ' + badge + '?')) {
-                        usersRef.child(badge).remove()
-                            .then(function() { showToast('User removed'); })
-                            .catch(function(err) { showToast('Error: ' + err.message); });
+        function checkUsersExist() {
+            usersRef.once('value').then(function(snap) {
+                var data = snap.val();
+                if (data) {
+                    var count = Object.keys(data).length;
+                    if (count === 0) {
+                        createAdminSection.classList.add('show');
+                        loginForm.style.display = 'none';
+                        loginError.textContent = '';
+                    } else {
+                        createAdminSection.classList.remove('show');
+                        loginForm.style.display = '';
                     }
-                });
+                } else {
+                    createAdminSection.classList.add('show');
+                    loginForm.style.display = 'none';
+                }
+            }).catch(function(err) {
+                console.error('Error checking users:', err);
             });
         }
 
-        // ─── LOGIN ──────────────────────────────────────────────────────────
-        function setLoginLoading(loading) {
-            if (loading) { loginLoading.classList.add('show');
-                loginBtn.disabled = true;
-                loginBtn.textContent = '…'; } else { loginLoading.classList.remove('show');
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Sign In →'; }
-        }
+        // ─── LOGIN / CREATE ADMIN ──────────────────────────────────────────
 
-        function showLoginError(msg) { loginError.textContent = msg; }
-
-        function clearLoginError() { loginError.textContent = ''; }
-
+        // Login form submit
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             var name = loginName.value.trim();
             var badge = loginBadge.value.trim();
-            if (!name || !badge) { showLoginError('Please fill in both fields.'); return; }
-            clearLoginError();
-            setLoginLoading(true);
+            if (!name || !badge) { loginError.textContent = 'Please enter name and badge.'; return; }
+            loginError.textContent = '';
+            loginBtn.disabled = true;
+            loginBtn.textContent = '…';
 
-            var userData = users[badge];
-            if (!userData) {
-                setLoginLoading(false);
-                showLoginError('Badge not found. Contact your admin.');
-                return;
-            }
-            if (userData.name.toLowerCase() !== name.toLowerCase()) {
-                setLoginLoading(false);
-                showLoginError('Name does not match this badge.');
-                return;
-            }
+            usersRef.child(badge).once('value').then(function(snap) {
+                var userData = snap.val();
+                if (userData && userData.name && userData.name.toLowerCase() === name.toLowerCase()) {
+                    // Login success
+                    currentUser = { badge: badge, name: userData.name, role: userData.role || 'technician' };
+                    loginSuccess();
+                } else {
+                    loginError.textContent = 'Invalid name or badge.';
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In →';
+                }
+            }).catch(function(err) {
+                loginError.textContent = 'Error: ' + err.message;
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In →';
+            });
+        });
 
-            currentUser = { badge: badge, name: userData.name, role: userData.role };
+        // Create admin
+        createAdminBtn.addEventListener('click', function() {
+            var name = createAdminName.value.trim();
+            var badge = createAdminBadge.value.trim();
+            if (!name || !badge) { createAdminError.textContent = 'Both fields required.'; return; }
+            createAdminError.textContent = '';
+            createAdminBtn.disabled = true;
+            createAdminBtn.textContent = 'Creating…';
+
+            usersRef.child(badge).once('value').then(function(snap) {
+                if (snap.exists()) {
+                    createAdminError.textContent = 'Badge already exists.';
+                    createAdminBtn.disabled = false;
+                    createAdminBtn.textContent = 'Create Admin →';
+                    return;
+                }
+                // Create admin user
+                usersRef.child(badge).set({
+                    name: name,
+                    role: 'admin'
+                }).then(function() {
+                    currentUser = { badge: badge, name: name, role: 'admin' };
+                    loginSuccess();
+                }).catch(function(err) {
+                    createAdminError.textContent = 'Error: ' + err.message;
+                    createAdminBtn.disabled = false;
+                    createAdminBtn.textContent = 'Create Admin →';
+                });
+            }).catch(function(err) {
+                createAdminError.textContent = 'Error: ' + err.message;
+                createAdminBtn.disabled = false;
+                createAdminBtn.textContent = 'Create Admin →';
+            });
+        });
+
+        function loginSuccess() {
+            // Hide login, show app
             loginOverlay.classList.add('hidden');
             app.classList.add('show');
-            userAvatar.textContent = userData.name.charAt(0).toUpperCase();
-            dropdownName.textContent = userData.name;
-            dropdownBadge.textContent = badge;
-            dropdownRole.textContent = userData.role;
-            if (userData.role === 'admin') {
-                adminManageUsers.style.display = '';
-            } else {
-                adminManageUsers.style.display = 'none';
-            }
+            // Update user menu
+            userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
+            dropdownName.textContent = currentUser.name;
+            dropdownBadge.textContent = currentUser.badge;
+            dropdownRole.textContent = currentUser.role;
+            // Apply role UI
+            applyRoleUI();
+            // Init app (load data, listeners)
             initApp();
             renderAll();
-            setLoginLoading(false);
-        });
+        }
 
         // ─── LOGOUT ──────────────────────────────────────────────────────────
         logoutBtn.addEventListener('click', function() {
             currentUser = null;
             userDropdown.classList.remove('open');
+            // Show login
             loginOverlay.classList.remove('hidden');
             app.classList.remove('show');
+            // Reset login form
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Sign In →';
             loginName.value = '';
             loginBadge.value = '';
-            clearLoginError();
+            loginError.textContent = '';
+            // Check users again
+            checkUsersExist();
+            // Detach listeners? We'll re-attach on login.
         });
 
-        // ─── ADMIN MODAL ──────────────────────────────────────────────────
-        adminManageUsers.addEventListener('click', function() {
-            adminModal.classList.add('show');
-            renderUserList();
-        });
-        adminCloseBtn.addEventListener('click', function() { adminModal.classList.remove('show'); });
-        adminModal.addEventListener('click', function(e) { if (e.target === adminModal) adminModal.classList.remove('show'); });
+        // ─── APPLY ROLE UI ──────────────────────────────────────────────────
+        function applyRoleUI() {
+            var r = getRole();
+            var isAdmin = r === 'admin';
+            var isSup = r === 'supervisor';
+            var isTech = r === 'technician';
 
-        adminAddBtn.addEventListener('click', function() {
-            var badge = adminBadge.value.trim();
-            var name = adminName.value.trim();
-            var role = adminRole.value;
-            if (!badge || !name) { showToast('Badge and name required'); return; }
-            if (users[badge]) { showToast('Badge already exists'); return; }
-            usersRef.child(badge).set({ name: name, role: role })
-                .then(function() {
-                    showToast('User added ✓');
-                    adminBadge.value = '';
-                    adminName.value = '';
-                })
-                .catch(function(err) { showToast('Error: ' + err.message); });
-        });
+            // Show/hide users button
+            var usersBtn = document.getElementById('btn-users');
+            if (isAdmin) {
+                usersBtn.style.display = '';
+            } else {
+                usersBtn.style.display = 'none';
+            }
 
-        // ─── APP INIT ──────────────────────────────────────────────────────
+            // Archive tab visible to non-tech
+            var archiveBtn = document.getElementById('btn-archive');
+            if (isTech) {
+                archiveBtn.style.display = 'none';
+            } else {
+                archiveBtn.style.display = '';
+            }
+
+            // Restrict export, edit, delete, archive buttons (handled in render)
+            // We'll re-apply on each render via a function call
+        }
+
+        // ─── INIT APP ──────────────────────────────────────────────────────
         function initApp() {
             buildLineGrid();
             setDefaultDates();
             initListeners();
             initNav();
             initFormHandlers();
-            renderAll();
-            document.getElementById('f-shift').value = getShift();
-            if (!document.getElementById('f-time').value) {
-                var now = new Date();
-                document.getElementById('f-time').value = String(now.getHours()).padStart(2, '0') + ':' + String(now
-                .getMinutes()).padStart(2, '0');
-            }
-            var hd = document.getElementById('h-date');
-            if (hd && !hd.value) hd.value = todayStr();
-            var lrd = document.getElementById('lr-date');
-            if (lrd && !lrd.value) lrd.value = todayStr();
+            // Start clock
             updateHeader();
             setInterval(updateHeader, 60000);
         }
 
+        // ─── BUILD LINE STATUS GRID ────────────────────────────────────────
         function buildLineGrid() {
             var grid = document.getElementById('h-line-status');
             if (!grid) return;
@@ -1993,8 +1997,8 @@
                     '<div class="ls-name">' + l + '</div>' +
                     '<div class="ls-btns">' +
                     ['OK', 'Issue', 'Down'].map(function(s) {
-                        return '<button class="ls-btn' + (s === 'OK' ? ' active-OK' : '') + '" data-line="' +
-                            l + '" data-status="' + s + '">' + s + '</button>';
+                        return '<button class="ls-btn' + (s === 'OK' ? ' active-OK' : '') +
+                            '" data-line="' + l + '" data-status="' + s + '">' + s + '</button>';
                     }).join('') +
                     '</div>' +
                     '</div>';
@@ -2005,29 +2009,45 @@
                     var st = btn.getAttribute('data-status');
                     lineStatus[line] = st;
                     document.querySelectorAll('.ls-btn[data-line="' + line + '"]').forEach(function(b) {
-                        b.className = 'ls-btn' + (b.getAttribute('data-status') === st ? ' active-' + st :
-                            '');
+                        b.className = 'ls-btn' + (b.getAttribute('data-status') === st ? ' active-' +
+                            st : '');
                     });
                 });
             });
         }
 
+        // ─── SET DEFAULT DATES ──────────────────────────────────────────────
         function setDefaultDates() {
             var today = todayStr();
             var d = new Date();
             d.setDate(d.getDate() - 7);
             var week = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate())
-            .padStart(2, '0');
-            ['exp-from', 'hexp-from', 'lrexp-from'].forEach(function(id) { var el = document.getElementById(id);
-                if (el) el.value = week; });
-            ['exp-to', 'hexp-to', 'lrexp-to'].forEach(function(id) { var el = document.getElementById(id);
-                if (el) el.value = today; });
+                .padStart(2, '0');
+            ['exp-from', 'hexp-from', 'lrexp-from'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.value = week;
+            });
+            ['exp-to', 'hexp-to', 'lrexp-to'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.value = today;
+            });
+            var hd = document.getElementById('h-date');
+            if (hd) hd.value = today;
+            var lrd = document.getElementById('lr-date');
+            if (lrd) lrd.value = today;
         }
 
-        function todayStr() { var n = new Date(); return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') +
-                '-' + String(n.getDate()).padStart(2, '0'); }
+        function todayStr() {
+            var n = new Date();
+            return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate())
+                .padStart(2, '0');
+        }
 
         // ─── FIREBASE LISTENERS ─────────────────────────────────────────────
+        var tasksRef = db.ref('smt_tasks');
+        var handoverRef = db.ref('smt_handovers');
+        var lineReportRef = db.ref('smt_linereports');
+
         function initListeners() {
             tasksRef.on('value', function(snap) {
                 tasks = snap.val() || {};
@@ -2035,7 +2055,7 @@
                 document.getElementById('sync-dot').className = 'sync-dot live';
                 document.getElementById('sync-label').textContent = 'Live — all shifts synced';
                 document.getElementById('sync-time').textContent = 'Updated ' + new Date().toLocaleTimeString([],
-                { hour: '2-digit', minute: '2-digit' });
+                    { hour: '2-digit', minute: '2-digit' });
             }, function(err) {
                 document.getElementById('sync-dot').className = 'sync-dot error';
                 document.getElementById('sync-label').textContent = 'Error: ' + err.message;
@@ -2051,6 +2071,13 @@
                 lineReports = snap.val() || {};
                 if (currentView === 'linereport') renderLineReport();
             });
+
+            // Listen for user changes (for admin user management)
+            usersRef.on('value', function(snap) {
+                if (currentView === 'users' && isAdmin()) {
+                    renderUserList();
+                }
+            });
         }
 
         // ─── HELPERS ─────────────────────────────────────────────────────────
@@ -2064,16 +2091,23 @@
             return 'Shift 3 (11PM-7AM)';
         }
 
-        function taskArray() { return Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); })
-                .filter(function(t) { return !t.archived; }); }
+        function taskArray() {
+            return Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); })
+                .filter(function(t) { return !t.archived; });
+        }
 
-        function archivedArray() { return Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); })
-                .filter(function(t) { return t.archived; }); }
+        function archivedArray() {
+            return Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); })
+                .filter(function(t) { return t.archived; });
+        }
 
         function statusKey(s) { return s.replace(/ /g, ''); }
 
-        function fmtDate(ts) { if (!ts) return ''; return new Date(ts).toLocaleString([], { year: 'numeric', month: '2-digit',
-                day: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+        function fmtDate(ts) {
+            if (!ts) return '';
+            return new Date(ts).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit',
+                minute: '2-digit' });
+        }
 
         function showToast(msg) {
             var el = document.getElementById('toast');
@@ -2085,11 +2119,11 @@
         }
 
         function getDateRange(fromId, toId) {
-            var fromVal = document.getElementById(fromId).value,
-                toVal = document.getElementById(toId).value;
+            var fromVal = document.getElementById(fromId).value;
+            var toVal = document.getElementById(toId).value;
             var from = fromVal ? new Date(fromVal + 'T00:00:00') : new Date(0);
             var to = toVal ? new Date(toVal + 'T23:59:59') : new Date(8640000000000000);
-            return { from: from, to: to };
+            return { from: from, to: to, label: (fromVal || 'all') + ' to ' + (toVal || 'today') };
         }
 
         function autoWidth(ws, rows) {
@@ -2097,19 +2131,19 @@
             var keys = Object.keys(rows[0]);
             ws['!cols'] = keys.map(function(k) {
                 var max = k.length;
-                rows.forEach(function(r) { var v = String(r[k] || '');
-                    if (v.length > max) max = v.length; });
+                rows.forEach(function(r) { var v = String(r[k] || ''); if (v.length > max) max = v.length; });
                 return { wch: Math.min(max + 2, 60) };
             });
         }
 
-        // ─── CONFIRM ──────────────────────────────────────────────────────────
+        // ─── SHOW CONFIRM ────────────────────────────────────────────────────
         function showConfirm(title, msg, onYes) {
             document.getElementById('confirm-title').textContent = title;
-            document.getElementById('confirm-msg').textContent = msg;
+            document.getElementById('confirm-msg').textContent = msg || 'This action cannot be undone.';
             document.getElementById('confirm-overlay').classList.add('show');
             confirmCallback = onYes;
         }
+
         document.getElementById('confirm-yes').addEventListener('click', function() {
             document.getElementById('confirm-overlay').classList.remove('show');
             if (confirmCallback) confirmCallback();
@@ -2122,12 +2156,21 @@
 
         // ─── NAV ─────────────────────────────────────────────────────────────
         function initNav() {
-            var navMap = { 'btn-board': 'board', 'btn-add': 'add', 'btn-linereport': 'linereport', 'btn-handover': 'handover',
-                'btn-summary': 'summary', 'btn-archive': 'archive' };
-            Object.keys(navMap).forEach(function(id) {
+            var navBtns = {
+                'btn-board': 'board',
+                'btn-add': 'add',
+                'btn-linereport': 'linereport',
+                'btn-handover': 'handover',
+                'btn-summary': 'summary',
+                'btn-archive': 'archive',
+                'btn-users': 'users'
+            };
+            Object.keys(navBtns).forEach(function(id) {
                 var btn = document.getElementById(id);
                 if (!btn) return;
-                btn.addEventListener('click', function() { switchView(navMap[id]); });
+                btn.addEventListener('click', function() {
+                    switchView(navBtns[id]);
+                });
             });
             document.getElementById('btn-clear-filters').addEventListener('click', function() {
                 document.getElementById('fl').value = '';
@@ -2141,8 +2184,13 @@
         }
 
         function switchView(v) {
+            // Ensure user has permission to view 'users'
+            if (v === 'users' && !isAdmin()) {
+                showToast('Admin only');
+                return;
+            }
             currentView = v;
-            ['board', 'add', 'linereport', 'handover', 'summary', 'archive'].forEach(function(name) {
+            ['board', 'add', 'linereport', 'handover', 'summary', 'archive', 'users'].forEach(function(name) {
                 var btn = document.getElementById('btn-' + name);
                 if (btn) btn.classList.toggle('active', name === v);
             });
@@ -2152,6 +2200,8 @@
             document.getElementById('handover-view').style.display = v === 'handover' ? 'block' : 'none';
             document.getElementById('summary-view').className = v === 'summary' ? 'active' : '';
             document.getElementById('archive-view').style.display = v === 'archive' ? 'block' : 'none';
+            document.getElementById('users-view').style.display = v === 'users' ? 'block' : 'none';
+
             if (v === 'board') renderBoard();
             if (v === 'summary') { renderSummary();
                 updateHeader();
@@ -2159,6 +2209,7 @@
             if (v === 'archive') renderArchive();
             if (v === 'handover') renderHandover();
             if (v === 'linereport') renderLineReport();
+            if (v === 'users') renderUserList();
             if (v === 'add') {
                 document.getElementById('f-shift').value = getShift();
                 if (!document.getElementById('f-time').value) {
@@ -2179,19 +2230,22 @@
             if (currentView === 'archive') renderArchive();
             if (currentView === 'handover') renderHandover();
             if (currentView === 'linereport') renderLineReport();
+            if (currentView === 'users') renderUserList();
             applyRoleUI();
         }
 
+        // ─── UPDATE HEADER ──────────────────────────────────────────────────
         function updateHeader() {
             var now = new Date();
             document.getElementById('date-label').textContent = now.toLocaleDateString([], { weekday: 'short',
                 month: 'short', day: 'numeric' });
-            document.getElementById('shift-label').textContent = getShift() + ' · ' + now.toLocaleTimeString([],
-            { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('shift-label').textContent = getShift() + ' · ' + now.toLocaleTimeString([], { hour: '2-digit',
+                minute: '2-digit' });
             var arr = taskArray();
             var open = arr.filter(function(t) { return t.status !== 'Resolved'; }).length;
             var done = arr.filter(function(t) { return t.status === 'Resolved'; }).length;
-            var crit = arr.filter(function(t) { return t.priority === 'Critical' && t.status !== 'Resolved'; }).length;
+            var crit = arr.filter(function(t) { return t.priority === 'Critical' && t.status !== 'Resolved'; })
+                .length;
             document.getElementById('open-count').textContent = open;
             document.getElementById('done-count').textContent = done;
             var cb = document.getElementById('critical-banner');
@@ -2199,6 +2253,7 @@
                 document.getElementById('critical-num').textContent = crit; } else cb.style.display = 'none';
         }
 
+        // ─── UPDATE LINE GRID ────────────────────────────────────────────────
         function updateLineGrid() {
             var arr = taskArray();
             document.getElementById('line-grid').innerHTML = LINES.map(function(l) {
@@ -2215,14 +2270,16 @@
             });
         }
 
-        function filterByLine(l) { document.getElementById('fl').value = l;
-            switchView('board'); }
+        function filterByLine(l) {
+            document.getElementById('fl').value = l;
+            switchView('board');
+        }
 
         // ─── RENDER BOARD ────────────────────────────────────────────────────
         function renderBoard() {
-            var fl = document.getElementById('fl').value,
-                fp = document.getElementById('fp').value,
-                fs = document.getElementById('fs').value;
+            var fl = document.getElementById('fl').value;
+            var fp = document.getElementById('fp').value;
+            var fs = document.getElementById('fs').value;
             var arr = taskArray().filter(function(t) {
                 if (fl && t.line !== fl) return false;
                 if (fp && t.priority !== fp) return false;
@@ -2231,9 +2288,11 @@
             });
             arr.sort(function(a, b) { return PRIORITIES.indexOf(a.priority) - PRIORITIES.indexOf(b.priority); });
             var list = document.getElementById('task-list');
-            if (!arr.length) { list.innerHTML =
+            if (!arr.length) {
+                list.innerHTML =
                     '<div class="empty"><div class="empty-icon">✅</div><div>No issues match the filter</div></div>';
-                return; }
+                return;
+            }
             var isTech = getRole() === 'technician';
             list.innerHTML = arr.map(function(t) {
                 return '<div class="task-card" data-priority="' + t.priority + '" data-id="' + t._id + '">' +
@@ -2248,20 +2307,23 @@
                     '<div class="task-info">👷 ' + esc(t.assignee || 'Unassigned') + ' · 🕐 ' + esc(t.time ||
                         '--:--') + ' · ' + (t.shift || '').split(' ')[0] + ' Shift</div>' +
                     '</div>' +
-                    '<button class="task-archive' + (isTech ? ' role-restricted' : '') + '" data-id="' + t
-                    ._id + '" title="Archive task">📦</button>' +
+                    '<button class="task-archive' + (isTech ? ' role-restricted' : '') + '" data-id="' + t._id +
+                    '" title="Archive task">📦</button>' +
                     '</div>' +
                     '<div class="task-body" id="body-' + t._id + '">' +
                     '<div class="task-note">📝 ' + esc(t.note || 'No notes.') + '</div>' +
                     '<div class="status-row">' +
-                    STATUSES.map(function(s) { return '<button class="status-btn ' + (t.status === s ?
-                            's-' + statusKey(s) : '') + '" data-id="' + t._id + '" data-status="' + s +
-                            '">' + s + '</button>'; }).join('') +
+                    STATUSES.map(function(s) {
+                        return '<button class="status-btn ' + (t.status === s ? 's-' + statusKey(s) :
+                            '') + '" data-id="' + t._id + '" data-status="' + s + '">' + s +
+                            '</button>';
+                    }).join('') +
                     '</div>' +
                     '</div>' +
                     '</div>';
             }).join('');
-            // Events
+
+            // Bind events
             document.querySelectorAll('.task-header').forEach(function(el) {
                 el.addEventListener('click', function() {
                     var id = el.closest('.task-card').getAttribute('data-id');
@@ -2277,17 +2339,17 @@
                     var task = tasks[id];
                     var title = task ? task.title : 'this issue';
                     showConfirm('Archive "' + title + '"?', 'It will be moved to the Archive tab.',
-                    function() {
-                        tasksRef.child(id).update({ archived: true });
-                        showToast('Issue archived 📦');
-                    });
+                        function() {
+                            tasksRef.child(id).update({ archived: true });
+                            showToast('Issue archived 📦');
+                        });
                 });
             });
             document.querySelectorAll('.status-btn').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
                     tasksRef.child(btn.getAttribute('data-id')).update({ status: btn.getAttribute(
-                        'data-status') });
+                            'data-status') });
                     showToast('Status → ' + btn.getAttribute('data-status'));
                 });
             });
@@ -2323,11 +2385,11 @@
                     '</div><div class="plbl">' + p + '</div></div>';
             }).join('');
             var ua = arr.filter(function(t) { return (!t.assignee || t.assignee === 'Unassigned') && t.status !==
-                'Resolved'; });
+                    'Resolved'; });
             document.getElementById('sum-unassigned').innerHTML = ua.length ?
                 '<div class="unassigned-card"><div class="unassigned-title">⚠️ Unassigned Issues (' + ua.length +
                 ')</div>' + ua.map(function(t) { return '<div class="unassigned-item">' + t.line + ' · ' + esc(t
-                    .title) + '</div>'; }).join('') + '</div>' :
+                        .title) + '</div>'; }).join('') + '</div>' :
                 '';
             applyRoleUI();
         }
@@ -2336,11 +2398,13 @@
         function renderArchive() {
             var arr = archivedArray();
             var list = document.getElementById('archive-list');
-            if (!arr.length) { list.innerHTML =
+            if (!arr.length) {
+                list.innerHTML =
                     '<div class="archive-empty"><div style="font-size:40px;margin-bottom:8px">📦</div><div>No archived issues</div></div>';
-                return; }
-            var isTech = getRole() === 'technician',
-                isAdmin = getRole() === 'admin';
+                return;
+            }
+            var isTech = getRole() === 'technician';
+            var isAdmin = getRole() === 'admin';
             list.innerHTML = arr.map(function(t) {
                 return '<div class="archive-card">' +
                     '<div class="task-meta">' +
@@ -2351,15 +2415,16 @@
                     '<div class="archive-card-title">' + (CAT_ICON[t.category] || '📌') + ' ' + esc(t.title) +
                     '</div>' +
                     '<div class="archive-card-info">👷 ' + esc(t.assignee || 'Unassigned') + ' · ' + esc(t
-                    .shift || '') + '</div>' +
+                        .shift || '') + '</div>' +
                     '<div class="archive-card-actions">' +
-                    '<button class="restore-btn' + (isTech ? ' role-restricted' : '') + '" data-id="' + t
-                    ._id + '">↩ Restore</button>' +
-                    '<button class="delete-btn' + (isAdmin ? '' : ' role-restricted') + '" data-id="' + t
+                    '<button class="restore-btn' + (isTech ? ' role-restricted' : '') + '" data-id="' + t._id +
+                    '">↩ Restore</button>' +
+                    '<button class="delete-btn' + (!isAdmin ? ' role-restricted' : '') + '" data-id="' + t
                     ._id + '">🗑 Delete</button>' +
                     '</div>' +
                     '</div>';
             }).join('');
+
             document.querySelectorAll('.restore-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     if (!can('restore')) { showToast('Permission denied'); return; }
@@ -2391,35 +2456,39 @@
 
             var arr = Object.keys(handovers).map(function(id) { return Object.assign({}, handovers[id], { _id: id }); });
             arr.sort(function(a, b) { return (b.created || 0) - (a.created || 0); });
+
             var el = document.getElementById('handover-history');
-            if (!arr.length) { el.innerHTML =
+            if (!arr.length) {
+                el.innerHTML =
                     '<div class="handover-empty"><div style="font-size:36px;margin-bottom:8px">📋</div><div>No handover reports yet</div></div>';
-                return; }
+                return;
+            }
             el.innerHTML = arr.map(function(r) {
                 var ls = r.lineStatus || {};
-                var lsBadges = LINES.map(function(l) { var st = ls[l] || 'OK'; return '<span class="hl-badge hl-' +
-                        st + '">' + l + ': ' + st + '</span>'; }).join('');
+                var lsBadges = LINES.map(function(l) {
+                    var st = ls[l] || 'OK';
+                    return '<span class="hl-badge hl-' + st + '">' + l + ': ' + st + '</span>';
+                }).join('');
                 var dt = r.created ? new Date(r.created).toLocaleString([], { month: 'short', day: 'numeric',
                     hour: '2-digit', minute: '2-digit' }) : r.date || '';
                 return '<div class="handover-card">' +
                     '<div class="handover-card-header">' +
                     '<div>' +
-                    '<div class="handover-card-who">' + esc(r.name) + ' <span style="color:var(--muted);font-weight:400;font-size:11px">(' +
-                    esc(r.role) + ')</span></div>' +
+                    '<div class="handover-card-who">' + esc(r.name) +
+                    ' <span style="color:var(--muted);font-weight:400;font-size:11px">(' + esc(r.role) +
+                    ')</span></div>' +
                     '<div class="handover-card-meta">' + dt + '</div>' +
                     '</div>' +
-                    '<div class="handover-shift-badge">' + esc((r.shift || '').replace('Shift ', 'S')) + '</div>' +
+                    '<div class="handover-shift-badge">' + esc((r.shift || '').replace('Shift ', 'S')) +
+                    '</div>' +
                     '</div>' +
                     '<div class="handover-section"><div class="handover-section-title">🏭 Line Status</div><div class="handover-line-row">' +
                     lsBadges + '</div></div>' +
-                    (r.openIssues ?
-                        '<div class="handover-section"><div class="handover-section-title">⚠️ Open Issues Carried</div><div class="handover-text">' +
+                    (r.openIssues ? '<div class="handover-section"><div class="handover-section-title">⚠️ Open Issues Carried</div><div class="handover-text">' +
                         esc(r.openIssues) + '</div></div>' : '') +
-                    (r.equipment ?
-                        '<div class="handover-section"><div class="handover-section-title">⚙️ Equipment Notes</div><div class="handover-text">' +
+                    (r.equipment ? '<div class="handover-section"><div class="handover-section-title">⚙️ Equipment Notes</div><div class="handover-text">' +
                         esc(r.equipment) + '</div></div>' : '') +
-                    (r.notes ?
-                        '<div class="handover-section"><div class="handover-section-title">📝 Notes for Next Shift</div><div class="handover-text">' +
+                    (r.notes ? '<div class="handover-section"><div class="handover-section-title">📝 Notes for Next Shift</div><div class="handover-text">' +
                         esc(r.notes) + '</div></div>' : '') +
                     '</div>';
             }).join('');
@@ -2437,30 +2506,36 @@
 
             var arr = Object.keys(lineReports).map(function(id) { return Object.assign({}, lineReports[id], { _id: id }); });
             arr.sort(function(a, b) { return (b.created || 0) - (a.created || 0); });
+
             var el = document.getElementById('linereport-history');
-            if (!arr.length) { el.innerHTML =
+            if (!arr.length) {
+                el.innerHTML =
                     '<div class="handover-empty"><div style="font-size:36px;margin-bottom:8px">📊</div><div>No line reports yet</div></div>';
-                return; }
-            var canEdit = can('editAny');
+                return;
+            }
+            var isTech = getRole() === 'technician';
             el.innerHTML = arr.map(function(r) {
                 var dt = r.created ? new Date(r.created).toLocaleString([], { month: 'short', day: 'numeric',
                     hour: '2-digit', minute: '2-digit' }) : r.date || '';
                 var lastEd = r.lastEdited ? ' · Last edited: ' + new Date(r.lastEdited).toLocaleString([],
-                { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+                    { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
                 var ct = r.ct || {};
                 var hasQuality = r.model || r.issues || r.rootcause || r.action;
                 var hasCT = ct.Printing || ct.SPI || ct.PP1 || ct.PP2 || ct.PP3;
-                var editCount = r.editCount || 0,
-                    editsLeft = 3 - editCount;
+                var editCount = r.editCount || 0;
+                var editsLeft = 3 - editCount;
                 var editSection = '';
-                if (canEdit) {
+                if (!isTech) {
                     editSection = editsLeft > 0 ?
-                        '<button class="edit-btn" data-id="' + r._id + '">✏️ Edit</button><div class="edit-count">' +
-                        editsLeft + ' edit' + (editsLeft > 1 ? 's' : '') + ' remaining</div>' :
+                        '<button class="edit-btn" data-id="' + r._id + '">✏️ Edit</button>' +
+                        '<div class="edit-count">' + editsLeft + ' edit' + (editsLeft > 1 ? 's' : '') +
+                        ' remaining</div>' :
                         '<div class="edit-locked">🔒 Locked — no more edits allowed</div>';
                 } else {
-                    editSection = '<div style="font-size:10px;color:var(--muted);margin-top:8px">👁️ View only</div>';
+                    editSection =
+                        '<div style="font-size:10px;color:var(--muted);margin-top:8px">👁️ View only</div>';
                 }
+
                 return '<div class="handover-card">' +
                     '<div class="handover-card-header">' +
                     '<div>' +
@@ -2473,32 +2548,36 @@
                     '</div>' +
                     (hasQuality ?
                         '<div class="handover-section">' +
-                        '<div class="handover-section-title">🔍 Quality Issues — Model: ' + esc(r.model || '-') +
-                        '</div>' +
-                        (r.issues ?
-                            '<div style="margin-bottom:6px"><span style="font-size:10px;color:var(--muted)">TOP 3:</span><div class="handover-text">' +
+                        '<div class="handover-section-title">🔍 Quality Issues — Model: ' + esc(r.model ||
+                            '-') + '</div>' +
+                        (r.issues ? '<div style="margin-bottom:6px"><span style="font-size:10px;color:var(--muted)">TOP 3:</span><div class="handover-text">' +
                             esc(r.issues).replace(/\n/g, '<br>') + '</div></div>' : '') +
-                        (r.rootcause ?
-                            '<div style="margin-bottom:6px"><span style="font-size:10px;color:var(--muted)">ROOT CAUSE:</span><div class="handover-text">' +
+                        (r.rootcause ? '<div style="margin-bottom:6px"><span style="font-size:10px;color:var(--muted)">ROOT CAUSE:</span><div class="handover-text">' +
                             esc(r.rootcause).replace(/\n/g, '<br>') + '</div></div>' : '') +
-                        (r.action ?
-                            '<div><span style="font-size:10px;color:var(--muted)">CORRECTIVE ACTION:</span><div class="handover-text">' +
+                        (r.action ? '<div><span style="font-size:10px;color:var(--muted)">CORRECTIVE ACTION:</span><div class="handover-text">' +
                             esc(r.action).replace(/\n/g, '<br>') + '</div></div>' : '') +
-                        '</div>' : '') +
+                        '</div>' :
+                        '') +
                     (hasCT ?
                         '<div class="handover-section">' +
                         '<div class="handover-section-title">⏱ Machine CT — Model: ' + esc(r.model || '-') +
                         '</div>' +
                         '<div style="overflow-x:auto"><table class="ho-table">' +
                         '<tr><th>Printing</th><th>SPI</th><th>P&amp;P 1</th><th>P&amp;P 2</th><th>P&amp;P 3</th></tr>' +
-                        '<tr><td>' + (ct.Printing || '-') + 's</td><td>' + (ct.SPI || '-') + 's</td><td>' + (ct
-                            .PP1 || '-') + 's</td><td>' + (ct.PP2 || '-') + 's</td><td>' + (ct.PP3 || '-') +
-                        's</td></tr>' +
+                        '<tr>' +
+                        '<td>' + (ct.Printing || '-') + 's</td>' +
+                        '<td>' + (ct.SPI || '-') + 's</td>' +
+                        '<td>' + (ct.PP1 || '-') + 's</td>' +
+                        '<td>' + (ct.PP2 || '-') + 's</td>' +
+                        '<td>' + (ct.PP3 || '-') + 's</td>' +
+                        '</tr>' +
                         '</table></div>' +
-                        '</div>' : '') +
+                        '</div>' :
+                        '') +
                     editSection +
                     '</div>';
             }).join('');
+
             document.querySelectorAll('.edit-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     if (!can('editAny')) { showToast('Permission denied'); return; }
@@ -2510,6 +2589,7 @@
             applyRoleUI();
         }
 
+        // ─── LINE REPORT EDIT ───────────────────────────────────────────────
         function startEdit(r) {
             editingReportId = r._id;
             document.getElementById('lr-name').value = r.name || '';
@@ -2536,14 +2616,15 @@
             editingReportId = null;
             document.getElementById('lr-edit-banner').classList.remove('show');
             document.getElementById('lr-submit-btn').textContent = 'Submit Line Report →';
-            ['lr-name', 'lr-model', 'lr-issues', 'lr-rootcause', 'lr-action', 'lr-ct-printing', 'lr-ct-spi', 'lr-ct-pp1',
-                'lr-ct-pp2', 'lr-ct-pp3'
+            ['lr-name', 'lr-model', 'lr-issues', 'lr-rootcause', 'lr-action',
+                'lr-ct-printing', 'lr-ct-spi', 'lr-ct-pp1', 'lr-ct-pp2', 'lr-ct-pp3'
             ].forEach(function(id) { document.getElementById(id).value = ''; });
             document.getElementById('lr-submit-btn').disabled = true;
         }
+
         document.getElementById('lr-cancel-edit').addEventListener('click', cancelEdit);
 
-        // ─── FORM HANDLERS ────────────────────────────────────────────────────
+        // ─── FORM HANDLERS ───────────────────────────────────────────────────
         function initFormHandlers() {
             // Add task
             document.getElementById('f-title').addEventListener('input', function() {
@@ -2580,8 +2661,8 @@
                 var name = document.getElementById('h-name').value.trim();
                 if (!name) return;
                 var openTasks = taskArray().filter(function(t) { return t.status !== 'Resolved'; });
-                var autoCarried = openTasks.length > 0 ? openTasks.map(function(t) { return t.line + ': ' + t
-                        .title + ' [' + t.status + ']'; }).join('\n') : '';
+                var autoCarried = openTasks.length > 0 ? openTasks.map(function(t) { return t.line + ': ' +
+                    t.title + ' [' + t.status + ']'; }).join('\n') : '';
                 var manualCarried = document.getElementById('h-openissues').value.trim();
                 handoverRef.push({
                     name: name,
@@ -2600,8 +2681,9 @@
                 document.getElementById('h-notes').value = '';
                 document.getElementById('h-submit-btn').disabled = true;
                 Object.keys(lineStatus).forEach(function(l) { lineStatus[l] = 'OK'; });
-                document.querySelectorAll('.ls-btn').forEach(function(b) { b.className = 'ls-btn' + (b
-                        .getAttribute('data-status') === 'OK' ? ' active-OK' : ''); });
+                document.querySelectorAll('.ls-btn').forEach(function(b) {
+                    b.className = 'ls-btn' + (b.getAttribute('data-status') === 'OK' ? ' active-OK' : '');
+                });
                 showToast('Handover report submitted ✓');
                 renderHandover();
             });
@@ -2609,13 +2691,17 @@
             // Line Report
             document.getElementById('lr-name').addEventListener('input', function() {
                 document.getElementById('lr-submit-btn').disabled = !this.value.trim() && !editingReportId;
-                if (!this.value.trim() && !editingReportId) { document.getElementById('lr-submit-btn').disabled =
-                        true; } else if (this.value.trim() || editingReportId) { document.getElementById(
-                        'lr-submit-btn').disabled = false; }
+                if (!this.value.trim() && !editingReportId) {
+                    document.getElementById('lr-submit-btn').disabled = true;
+                } else if (this.value.trim() || editingReportId) {
+                    document.getElementById('lr-submit-btn').disabled = false;
+                }
             });
             document.getElementById('lr-submit-btn').addEventListener('click', function() {
                 var name = document.getElementById('lr-name').value.trim();
+                if (!name && !editingReportId) { showToast('Technician name required'); return; }
                 if (!name) { showToast('Technician name required'); return; }
+
                 var data = {
                     name: name,
                     line: document.getElementById('lr-line').value,
@@ -2633,6 +2719,7 @@
                         PP3: document.getElementById('lr-ct-pp3').value || ''
                     }
                 };
+
                 if (editingReportId) {
                     var existing = lineReports[editingReportId] || {};
                     var editCount = (existing.editCount || 0) + 1;
@@ -2647,182 +2734,310 @@
                     data.editCount = 0;
                     lineReportRef.push(data);
                     showToast('Line report submitted ✓');
-                    ['lr-name', 'lr-model', 'lr-issues', 'lr-rootcause', 'lr-action', 'lr-ct-printing',
-                        'lr-ct-spi', 'lr-ct-pp1', 'lr-ct-pp2', 'lr-ct-pp3'
+                    ['lr-name', 'lr-model', 'lr-issues', 'lr-rootcause', 'lr-action',
+                        'lr-ct-printing', 'lr-ct-spi', 'lr-ct-pp1', 'lr-ct-pp2', 'lr-ct-pp3'
                     ].forEach(function(id) { document.getElementById(id).value = ''; });
                     document.getElementById('lr-submit-btn').disabled = true;
                 }
                 renderLineReport();
             });
+
+            // ─── USER MANAGEMENT (admin only) ──────────────────────────────
+            document.getElementById('add-user-btn').addEventListener('click', function() {
+                if (!isAdmin()) { showToast('Admin only'); return; }
+                var name = document.getElementById('new-user-name').value.trim();
+                var badge = document.getElementById('new-user-badge').value.trim();
+                var role = document.getElementById('new-user-role').value;
+                if (!name || !badge) {
+                    document.getElementById('add-user-msg').textContent = 'Name and badge required.';
+                    return;
+                }
+                var msgEl = document.getElementById('add-user-msg');
+                msgEl.textContent = 'Adding…';
+                msgEl.style.color = 'var(--muted)';
+                usersRef.child(badge).once('value').then(function(snap) {
+                    if (snap.exists()) {
+                        msgEl.textContent = 'Badge already exists.';
+                        msgEl.style.color = 'var(--critical)';
+                        return;
+                    }
+                    return usersRef.child(badge).set({
+                        name: name,
+                        role: role
+                    }).then(function() {
+                        msgEl.textContent = '✅ User added!';
+                        msgEl.style.color = 'var(--green)';
+                        document.getElementById('new-user-name').value = '';
+                        document.getElementById('new-user-badge').value = '';
+                        renderUserList();
+                    });
+                }).catch(function(err) {
+                    msgEl.textContent = 'Error: ' + err.message;
+                    msgEl.style.color = 'var(--critical)';
+                });
+            });
         }
 
-        // ─── EXPORT FUNCTIONS ────────────────────────────────────────────────
-        function exportIssues() {
+        // ─── RENDER USER LIST ───────────────────────────────────────────────
+        function renderUserList() {
+            if (!isAdmin()) {
+                document.getElementById('user-list').innerHTML =
+                    '<div style="color:var(--muted);padding:12px 0">Admin only</div>';
+                return;
+            }
+            var el = document.getElementById('user-list');
+            usersRef.once('value').then(function(snap) {
+                var data = snap.val();
+                if (!data) {
+                    el.innerHTML = '<div style="color:var(--muted);padding:12px 0">No users found.</div>';
+                    return;
+                }
+                var keys = Object.keys(data);
+                var html = keys.map(function(badge) {
+                    var u = data[badge];
+                    return '<div class="user-mgmt-item">' +
+                        '<div><strong>' + esc(u.name) + '</strong> <span class="badge-role">' + esc(u
+                            .role || 'technician') + '</span></div>' +
+                        '<div style="display:flex;align-items:center;gap:8px">' +
+                        '<span style="font-size:11px;color:var(--muted)">#' + esc(badge) + '</span>' +
+                        (badge !== currentUser.badge ?
+                            '<button class="delete-user" data-badge="' + badge +
+                            '" title="Delete user">✕</button>' :
+                            '<span style="font-size:10px;color:var(--muted)">(you)</span>') +
+                        '</div>' +
+                        '</div>';
+                }).join('');
+                el.innerHTML = html;
+
+                // Bind delete
+                document.querySelectorAll('.delete-user').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        if (!isAdmin()) return;
+                        var badge = btn.getAttribute('data-badge');
+                        showConfirm('Delete user?', 'This will permanently remove the user account.',
+                            function() {
+                                usersRef.child(badge).remove().then(function() {
+                                    showToast('User deleted');
+                                });
+                            });
+                    });
+                });
+            });
+        }
+
+        // ─── EXPORT FUNCTIONS ───────────────────────────────────────────────
+
+        // Export Issues
+        document.getElementById('btn-export-issues').addEventListener('click', function() {
             if (!can('export')) { showToast('Permission denied'); return; }
             var range = getDateRange('exp-from', 'exp-to');
-            var all = Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); });
-            var filtered = all.filter(function(t) { if (t.archived) return false; var d = t.created ? new Date(t.created) :
-                    null; if (!d) return true; return d >= range.from && d <= range.to; });
-            if (!filtered.length) { showToast('No issues in date range'); return; }
-            filtered.sort(function(a, b) { return PRIORITIES.indexOf(a.priority) - PRIORITIES.indexOf(b.priority); });
-            var rows = filtered.map(function(t) { return { 'Date Logged': fmtDate(t.created), 'Line': t.line || '',
-                    'Shift': t.shift || '', 'Category': t.category || '', 'Priority': t.priority || '',
-                    'Status': t.status || '', 'Title': t.title || '', 'Assigned To': t.assignee || '',
-                    'Time Found': t.time || '', 'Notes': t.note || '' }; });
+            var allTasks = Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); });
+            var filtered = allTasks.filter(function(t) {
+                if (t.archived) return false;
+                var d = t.created ? new Date(t.created) : null;
+                if (!d) return true;
+                return d >= range.from && d <= range.to;
+            });
+            if (!filtered.length) { showToast('No issues in this date range'); return; }
+            var order = ['Critical', 'High', 'Medium', 'Low'];
+            filtered.sort(function(a, b) { return order.indexOf(a.priority) - order.indexOf(b.priority); });
+            var rows = filtered.map(function(t) {
+                return {
+                    'Date Logged': fmtDate(t.created),
+                    'Line': t.line || '',
+                    'Shift': t.shift || '',
+                    'Category': t.category || '',
+                    'Priority': t.priority || '',
+                    'Status': t.status || '',
+                    'Title': t.title || '',
+                    'Assigned To': t.assignee || '',
+                    'Time Found': t.time || '',
+                    'Notes': t.note || ''
+                };
+            });
             var ws = XLSX.utils.json_to_sheet(rows);
             autoWidth(ws, rows);
             var wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Issues');
             XLSX.writeFile(wb, 'SMT_Issues_' + todayStr() + '.xlsx');
             showToast('Exported ' + rows.length + ' issues ✓');
-        }
+        });
 
-        function exportSummary() {
+        // Export Summary
+        document.getElementById('btn-export-summary').addEventListener('click', function() {
             if (!can('export')) { showToast('Permission denied'); return; }
             var range = getDateRange('exp-from', 'exp-to');
-            var all = Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); });
-            var filtered = all.filter(function(t) { if (t.archived) return false; var d = t.created ? new Date(t.created) :
-                    null; if (!d) return true; return d >= range.from && d <= range.to; });
+            var allTasks = Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); });
+            var filtered = allTasks.filter(function(t) {
+                if (t.archived) return false;
+                var d = t.created ? new Date(t.created) : null;
+                if (!d) return true;
+                return d >= range.from && d <= range.to;
+            });
             var wb = XLSX.utils.book_new();
             // By Line
-            var lineRows = LINES.map(function(l) { var lt = filtered.filter(function(t) { return t.line === l; });
+            var lineRows = LINES.map(function(l) {
+                var lt = filtered.filter(function(t) { return t.line === l; });
                 var row = { 'Line': l, 'Total Issues': lt.length };
-                ['Critical', 'High', 'Medium', 'Low'].forEach(function(p) { row[p] = lt.filter(function(t) { return t
-                        .priority === p; }).length; });
-                ['Open', 'In Progress', 'Pending Parts', 'Resolved'].forEach(function(s) { row[s] = lt.filter(
-                    function(t) { return t.status === s; }).length; });
-                return row; });
+                ['Critical', 'High', 'Medium', 'Low'].forEach(function(p) { row[p] = lt.filter(function(t) {
+                        return t.priority === p; }).length; });
+                ['Open', 'In Progress', 'Pending Parts', 'Resolved'].forEach(function(s) { row[s] = lt
+                        .filter(function(t) { return t.status === s; }).length; });
+                return row;
+            });
             var ws1 = XLSX.utils.json_to_sheet(lineRows);
             autoWidth(ws1, lineRows);
             XLSX.utils.book_append_sheet(wb, ws1, 'By Line');
             // By Category
-            var catRows = CATS.map(function(c) { var ct = filtered.filter(function(t) { return t.category === c; });
-                return { 'Category': c, 'Total': ct.length, 'Open': ct.filter(function(t) { return t.status ===
-                        'Open'; }).length, 'In Progress': ct.filter(function(t) { return t.status ===
-                        'In Progress'; }).length, 'Resolved': ct.filter(function(t) { return t.status ===
-                        'Resolved'; }).length }; });
+            var catRows = CATS.map(function(c) {
+                var ct = filtered.filter(function(t) { return t.category === c; });
+                return { 'Category': c, 'Total': ct.length, 'Open': ct.filter(function(t) { return t
+                        .status === 'Open'; }).length, 'In Progress': ct.filter(function(t) { return t
+                        .status === 'In Progress'; }).length, 'Resolved': ct.filter(function(t) { return t
+                        .status === 'Resolved'; }).length };
+            });
             var ws2 = XLSX.utils.json_to_sheet(catRows);
             autoWidth(ws2, catRows);
             XLSX.utils.book_append_sheet(wb, ws2, 'By Category');
             // By Shift
-            var shiftRows = ['Shift 1 (7AM-3PM)', 'Shift 2 (3PM-11PM)', 'Shift 3 (11PM-7AM)'].map(function(s) { var st =
-                    filtered.filter(function(t) { return t.shift === s; });
+            var shiftRows = ['Shift 1 (7AM-3PM)', 'Shift 2 (3PM-11PM)', 'Shift 3 (11PM-7AM)'].map(function(s) {
+                var st = filtered.filter(function(t) { return t.shift === s; });
                 var row = { 'Shift': s, 'Total Issues': st.length };
-                ['Critical', 'High', 'Medium', 'Low'].forEach(function(p) { row[p] = st.filter(function(t) { return t
-                        .priority === p; }).length; });
-                return row; });
+                ['Critical', 'High', 'Medium', 'Low'].forEach(function(p) { row[p] = st.filter(function(t) {
+                        return t.priority === p; }).length; });
+                return row;
+            });
             var ws3 = XLSX.utils.json_to_sheet(shiftRows);
             autoWidth(ws3, shiftRows);
             XLSX.utils.book_append_sheet(wb, ws3, 'By Shift');
             // By Technician
             var techMap = {};
-            filtered.forEach(function(t) { var a = t.assignee || 'Unassigned'; if (!techMap[a]) techMap[a] = { name: a,
-                    total: 0, resolved: 0, critical: 0 };
+            filtered.forEach(function(t) {
+                var a = t.assignee || 'Unassigned';
+                if (!techMap[a]) techMap[a] = { name: a, total: 0, resolved: 0, critical: 0 };
                 techMap[a].total++;
                 if (t.status === 'Resolved') techMap[a].resolved++;
-                if (t.priority === 'Critical') techMap[a].critical++; });
-            var techRows = Object.values(techMap).sort(function(a, b) { return b.total - a.total; }).map(function(t) {
+                if (t.priority === 'Critical') techMap[a].critical++;
+            });
+            var techRows = Object.values(techMap).sort(function(a, b) { return b.total - a.total; }).map(function(
+                t) {
                 return { 'Technician': t.name, 'Total Tasks': t.total, 'Resolved': t.resolved,
-                    'Critical Issues': t.critical, 'Resolution Rate': t.total > 0 ? Math.round(t.resolved /
-                        t.total * 100) + '%' : '0%' }; });
-            var ws4 = XLSX.utils.json_to_sheet(techRows.length ? techRows : [{ Note: 'No data' }]);
+                    'Critical Issues': t.critical, 'Resolution Rate': t.total > 0 ? Math.round(t
+                        .resolved / t.total * 100) + '%' : '0%' };
+            });
+            var ws4 = XLSX.utils.json_to_sheet(techRows.length ? techRows : [{ Note: 'No data in range' }]);
             autoWidth(ws4, techRows.length ? techRows : [{ Note: 'No data' }]);
             XLSX.utils.book_append_sheet(wb, ws4, 'By Technician');
             XLSX.writeFile(wb, 'SMT_Summary_' + todayStr() + '.xlsx');
             showToast('Summary exported — 4 sheets ✓');
-        }
+        });
 
-        function exportHandover() {
+        // Export Handover
+        document.getElementById('btn-export-handover').addEventListener('click', function() {
             if (!can('export')) { showToast('Permission denied'); return; }
             var range = getDateRange('hexp-from', 'hexp-to');
             var arr = Object.keys(handovers).map(function(id) { return Object.assign({}, handovers[id], { _id: id }); });
-            var filtered = arr.filter(function(r) { var d = r.created ? new Date(r.created) : null; if (!d) return true;
-                return d >= range.from && d <= range.to; });
-            if (!filtered.length) { showToast('No handover reports in date range'); return; }
+            var filtered = arr.filter(function(r) {
+                var d = r.created ? new Date(r.created) : null;
+                if (!d) return true;
+                return d >= range.from && d <= range.to;
+            });
+            if (!filtered.length) { showToast('No handover reports in this date range'); return; }
             filtered.sort(function(a, b) { return (b.created || 0) - (a.created || 0); });
-            var rows = filtered.map(function(r) { var ls = r.lineStatus || {}; return { 'Submitted At': fmtDate(r
-                        .created), 'Production Date': r.date || '', 'Submitted By': r.name || '',
-                    'Role': r.role || '', 'Shift': r.shift || '', 'L1 Status': ls.L1 || '',
-                    'L2 Status': ls.L2 || '', 'L3 Status': ls.L3 || '', 'L4 Status': ls.L4 || '',
-                    'L5 Status': ls.L5 || '', 'L6 Status': ls.L6 || '', 'Open Issues Carried': r
-                        .openIssues || '', 'Equipment Notes': r.equipment || '',
-                    'Notes for Next Shift': r.notes || '' }; });
+            var rows = filtered.map(function(r) {
+                var ls = r.lineStatus || {};
+                return {
+                    'Submitted At': fmtDate(r.created),
+                    'Production Date': r.date || '',
+                    'Submitted By': r.name || '',
+                    'Role': r.role || '',
+                    'Shift': r.shift || '',
+                    'L1 Status': ls.L1 || '',
+                    'L2 Status': ls.L2 || '',
+                    'L3 Status': ls.L3 || '',
+                    'L4 Status': ls.L4 || '',
+                    'L5 Status': ls.L5 || '',
+                    'L6 Status': ls.L6 || '',
+                    'Open Issues Carried': r.openIssues || '',
+                    'Equipment Notes': r.equipment || '',
+                    'Notes for Next Shift': r.notes || ''
+                };
+            });
             var ws = XLSX.utils.json_to_sheet(rows);
             autoWidth(ws, rows);
             var wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Handover Reports');
             XLSX.writeFile(wb, 'SMT_Handover_' + todayStr() + '.xlsx');
             showToast('Exported ' + filtered.length + ' handover reports ✓');
-        }
+        });
 
-        function exportLineReport() {
+        // Export Line Report
+        document.getElementById('btn-export-linereport').addEventListener('click', function() {
             if (!can('export')) { showToast('Permission denied'); return; }
             var range = getDateRange('lrexp-from', 'lrexp-to');
             var arr = Object.keys(lineReports).map(function(id) { return Object.assign({}, lineReports[id], { _id: id }); });
-            var filtered = arr.filter(function(r) { var d = r.created ? new Date(r.created) : null; if (!d) return true;
-                return d >= range.from && d <= range.to; });
-            if (!filtered.length) { showToast('No line reports in date range'); return; }
+            var filtered = arr.filter(function(r) {
+                var d = r.created ? new Date(r.created) : null;
+                if (!d) return true;
+                return d >= range.from && d <= range.to;
+            });
+            if (!filtered.length) { showToast('No reports in this date range'); return; }
             filtered.sort(function(a, b) { return (b.created || 0) - (a.created || 0); });
             var wb = XLSX.utils.book_new();
-            var qRows = filtered.map(function(r) { return { 'Submitted At': fmtDate(r.created), 'Last Edited': r
-                        .lastEdited ? fmtDate(r.lastEdited) : '', 'Edit Count': r.editCount || 0,
-                    'Production Date': r.date || '', 'Technician': r.name || '', 'Line': r.line || '',
-                    'Shift': r.shift || '', 'Model': r.model || '', 'Top 3 Issues': r.issues || '',
-                    'Root Cause': r.rootcause || '', 'Corrective Action': r.action || '' }; });
+            // Quality
+            var qRows = filtered.map(function(r) {
+                return {
+                    'Submitted At': fmtDate(r.created),
+                    'Last Edited': r.lastEdited ? fmtDate(r.lastEdited) : '',
+                    'Edit Count': r.editCount || 0,
+                    'Production Date': r.date || '',
+                    'Technician': r.name || '',
+                    'Line': r.line || '',
+                    'Shift': r.shift || '',
+                    'Model': r.model || '',
+                    'Top 3 Issues': r.issues || '',
+                    'Root Cause': r.rootcause || '',
+                    'Corrective Action': r.action || ''
+                };
+            });
             var ws1 = XLSX.utils.json_to_sheet(qRows);
             autoWidth(ws1, qRows);
             XLSX.utils.book_append_sheet(wb, ws1, 'Quality Issues');
-            var ctRows = filtered.map(function(r) { var ct = r.ct || {}; return { 'Submitted At': fmtDate(r
-                        .created), 'Last Edited': r.lastEdited ? fmtDate(r.lastEdited) : '',
-                    'Edit Count': r.editCount || 0, 'Production Date': r.date || '',
-                    'Technician': r.name || '', 'Line': r.line || '', 'Shift': r.shift || '',
-                    'Model': r.model || '', 'Printing (s)': ct.Printing || '', 'SPI (s)': ct.SPI || '',
-                    'P&P 1 (s)': ct.PP1 || '', 'P&P 2 (s)': ct.PP2 || '', 'P&P 3 (s)': ct.PP3 || '' }; });
+            // CT
+            var ctRows = filtered.map(function(r) {
+                var ct = r.ct || {};
+                return {
+                    'Submitted At': fmtDate(r.created),
+                    'Last Edited': r.lastEdited ? fmtDate(r.lastEdited) : '',
+                    'Edit Count': r.editCount || 0,
+                    'Production Date': r.date || '',
+                    'Technician': r.name || '',
+                    'Line': r.line || '',
+                    'Shift': r.shift || '',
+                    'Model': r.model || '',
+                    'Printing (s)': ct.Printing || '',
+                    'SPI (s)': ct.SPI || '',
+                    'P&P 1 (s)': ct.PP1 || '',
+                    'P&P 2 (s)': ct.PP2 || '',
+                    'P&P 3 (s)': ct.PP3 || ''
+                };
+            });
             var ws2 = XLSX.utils.json_to_sheet(ctRows);
             autoWidth(ws2, ctRows);
             XLSX.utils.book_append_sheet(wb, ws2, 'Machine CT');
             XLSX.writeFile(wb, 'SMT_LineReport_' + todayStr() + '.xlsx');
             showToast('Exported ' + filtered.length + ' reports — 2 sheets ✓');
-        }
-
-        // Bind export buttons
-        document.getElementById('btn-export-issues').addEventListener('click', exportIssues);
-        document.getElementById('btn-export-summary').addEventListener('click', exportSummary);
-        document.getElementById('btn-export-handover').addEventListener('click', exportHandover);
-        document.getElementById('btn-export-linereport').addEventListener('click', exportLineReport);
-
-        // ─── APPLY ROLE UI ────────────────────────────────────────────────────
-        function applyRoleUI() {
-            var r = getRole();
-            var isAdmin = r === 'admin',
-                isSup = r === 'supervisor',
-                isTech = r === 'technician';
-            // Archive nav
-            document.getElementById('btn-archive').style.display = isTech ? 'none' : '';
-            // Export buttons
-            document.querySelectorAll('.export-btn').forEach(function(el) { if (isTech) el.classList.add(
-                    'role-restricted');
-                else el.classList.remove('role-restricted'); });
-            // Edit buttons
-            document.querySelectorAll('.edit-btn').forEach(function(el) { if (isTech) el.classList.add(
-                    'role-restricted');
-                else el.classList.remove('role-restricted'); });
-            // Restore & delete
-            document.querySelectorAll('.restore-btn, .delete-btn').forEach(function(el) { if (isTech) el.classList.add(
-                    'role-restricted');
-                else el.classList.remove('role-restricted'); });
-            document.querySelectorAll('.delete-btn').forEach(function(el) { if (!isAdmin) el.classList.add(
-                    'role-restricted');
-                else el.classList.remove('role-restricted'); });
-            document.querySelectorAll('.task-archive').forEach(function(el) { if (isTech) el.classList.add(
-                    'role-restricted');
-                else el.classList.remove('role-restricted'); });
-            // Admin manage users
-            if (isAdmin) { adminManageUsers.style.display = ''; } else { adminManageUsers.style.display = 'none'; }
-        }
+        });
 
         // ─── STARTUP ──────────────────────────────────────────────────────────
-        console.log('🔐 SMT Control Center — Local badge login');
+        // Check for existing users
+        checkUsersExist();
+
+        // If user already logged in (from previous session), we won't have currentUser, so we rely on login.
+        // On page load, show login overlay; app hidden.
+
+        console.log('🔐 SMT Control Center with Name+Badge Login & Admin User Management');
+        console.log('👤 First-time: create admin using the form.');
     </script>
 </body>
 </html>
