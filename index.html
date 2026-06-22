@@ -1402,14 +1402,15 @@
             font-size: 13px;
         }
 
-        /* ─── ISSUE CARDS (Line Report) ─── */
+        /* ─── UPDATED ISSUE CARDS (Line Report) ─── */
         #app .issue-block {
             margin-bottom: 10px;
         }
         #app .issue-card-row {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             background: var(--surface2);
             border: 1px solid var(--border);
             border-radius: 8px 8px 0 0;
@@ -1436,10 +1437,10 @@
             color: var(--text);
             font-size: 13px;
             font-weight: 600;
-            flex: 1;
+            flex: 1 1 120px;
+            min-width: 80px;
             font-family: var(--font);
             padding: 0;
-            width: auto;
         }
         #app .issue-name-input::placeholder { color: var(--muted); font-weight: 400; }
         #app .issue-rca-block {
@@ -1482,15 +1483,16 @@
             resize: none;
             line-height: 1.5;
             height: 52px;
-            width: auto;
         }
         #app .issue-rca-input::placeholder { color: var(--border); }
         #app .issue-rca-input:focus { background: var(--surface2); }
 
         #app .issue-meta-inputs {
             display: flex;
-            gap: 5px;
-            flex-shrink: 0;
+            flex-wrap: wrap;
+            gap: 4px;
+            flex-shrink: 1;
+            flex: 0 1 auto;
         }
         #app .issue-meta-input {
             background: var(--bg);
@@ -1501,12 +1503,18 @@
             font-family: var(--font);
             padding: 4px 7px;
             outline: none;
-            width: 74px;
+            width: auto;
+            min-width: 50px;
             height: 28px;
+            flex: 0 1 auto;
         }
         #app .issue-meta-input:focus { border-color: var(--accent); }
         #app .issue-meta-input::placeholder { color: var(--muted); }
-        #app .issue-qty { width: 50px; }
+        #app .issue-qty {
+            min-width: 40px;
+            width: 60px;
+        }
+
         #app .issue-card-row.has-error {
             border-color: var(--critical) !important;
             border-bottom-color: var(--critical) !important;
@@ -1541,6 +1549,21 @@
             }
             #app .user-name-tag {
                 display: none !important;
+            }
+            /* extra small screen tweaks for issue meta */
+            #app .issue-meta-input {
+                min-width: 40px;
+                font-size: 10px;
+                height: 24px;
+                padding: 2px 5px;
+            }
+            #app .issue-qty {
+                width: 50px;
+            }
+            #app .issue-name-input {
+                font-size: 12px;
+                min-width: 60px;
+                flex-basis: 100%;
             }
         }
     </style>
