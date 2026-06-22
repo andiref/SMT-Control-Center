@@ -179,7 +179,7 @@
             background: #15803d;
         }
 
-        /* ── APP (unchanged except new user nav) ── */
+        /* ── APP ── */
         #app {
             display: none;
             flex-direction: column;
@@ -189,11 +189,7 @@
             display: flex;
         }
 
-        /* ── all existing styles from previous version ── */
-        /* (the full style block is huge; we keep everything under #app as before) */
-        /* For brevity, we assume the styles from the original are preserved.
-           We just add a few new ones for user management. */
-
+        /* ── all existing styles from previous version (unchanged) ── */
         #app #sync-bar {
             display: flex;
             align-items: center;
@@ -1199,11 +1195,6 @@
         #app .edit-btn:hover {
             background: #2563eb;
         }
-        #app .edit-btn.role-restricted {
-            opacity: .4;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
         #app .edit-locked {
             font-size: 10px;
             color: var(--muted);
@@ -1442,7 +1433,7 @@
             color: #ff6b6b;
         }
 
-        /* ── Responsive tweaks ── */
+        /* ── Responsive ── */
         @media (max-width: 400px) {
             #app .header-title {
                 font-size: 17px;
@@ -1490,7 +1481,7 @@
 
             <div class="login-role-hint">Contact admin for badge and role</div>
 
-            <!-- Create admin section (visible only when no users exist) -->
+            <!-- Create admin section (visible when no users exist) -->
             <div class="login-create-admin" id="create-admin-section">
                 <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-align:center">
                     🔑 No users found — create the first admin account
@@ -1511,7 +1502,7 @@
 
     <!-- ─── APP ─── -->
     <div id="app">
-        <!-- Sync bar, header, line grid, nav, main… (all unchanged) -->
+        <!-- Sync bar, header, line grid, nav, main… (unchanged) -->
         <div id="sync-bar">
             <div class="sync-dot" id="sync-dot"></div>
             <span id="sync-label">Connecting…</span>
@@ -1560,8 +1551,7 @@
         </div>
 
         <div id="main">
-            <!-- Board, Add, Summary, Archive, Handover, LineReport views – same as before -->
-            <!-- We'll keep all existing view IDs and content, just add a new Users view -->
+            <!-- Board, Add, Summary, Archive, Handover, LineReport – same as before -->
             <div id="board-view">
                 <div id="filters">
                     <select class="filter-sel" id="fl"><option value="">All Lines</option><option>L1</option><option>L2</option><option>L3</option><option>L4</option><option>L5</option><option>L6</option></select>
@@ -1703,7 +1693,7 @@
                 </div>
             </div>
 
-            <!-- ─── NEW: USERS VIEW (admin only) ─── -->
+            <!-- ─── USERS VIEW (admin only) ─── -->
             <div id="users-view" style="display:none">
                 <div class="form-card user-mgmt-card">
                     <div class="form-title">👤 Add New User</div>
@@ -1776,6 +1766,7 @@
         var toastTimer;
         var confirmCallback = null;
         var editingReportId = null;
+        var editingHandoverId = null; // for handover edit
 
         var LINES = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
         var PRIORITIES = ['Critical', 'High', 'Medium', 'Low'];
@@ -1795,8 +1786,9 @@
                 return true;
             }
             if (r === 'technician') {
-                if (perm === 'archive' || perm === 'restore' || perm === 'permadelete' || perm === 'editAny' || perm ===
-                    'export') return false;
+                if (perm === 'archive' || perm === 'restore' || perm === 'permadelete' || perm === 'export') return false;
+                // Technicians can edit reports (permission 'editAny' now allowed)
+                if (perm === 'editAny') return true;
                 return true;
             }
             return false;
@@ -1972,7 +1964,7 @@
                 archiveBtn.style.display = '';
             }
 
-            // Restrict export, edit, delete, archive buttons (handled in render)
+            // Restrict export, delete, archive buttons (handled in render)
             // We'll re-apply on each render via a function call
         }
 
@@ -2445,7 +2437,7 @@
             applyRoleUI();
         }
 
-        // ─── RENDER HANDOVER ──────────────────────────────────────────────────
+        // ─── RENDER HANDOVER (with edit for all, lock after 3) ──────────────
         function renderHandover() {
             var h = document.getElementById('h-shift');
             if (h) h.value = getShift();
@@ -2471,6 +2463,17 @@
                 }).join('');
                 var dt = r.created ? new Date(r.created).toLocaleString([], { month: 'short', day: 'numeric',
                     hour: '2-digit', minute: '2-digit' }) : r.date || '';
+                var editCount = r.editCount || 0;
+                var editsLeft = 3 - editCount;
+                var editSection = '';
+                if (editsLeft > 0) {
+                    editSection = '<button class="edit-btn" data-id="' + r._id +
+                        '" data-type="handover">✏️ Edit</button>' +
+                        '<div class="edit-count">' + editsLeft + ' edit' + (editsLeft > 1 ? 's' : '') +
+                        ' remaining</div>';
+                } else {
+                    editSection = '<div class="edit-locked">🔒 Locked — no more edits allowed</div>';
+                }
                 return '<div class="handover-card">' +
                     '<div class="handover-card-header">' +
                     '<div>' +
@@ -2490,12 +2493,75 @@
                         esc(r.equipment) + '</div></div>' : '') +
                     (r.notes ? '<div class="handover-section"><div class="handover-section-title">📝 Notes for Next Shift</div><div class="handover-text">' +
                         esc(r.notes) + '</div></div>' : '') +
+                    editSection +
                     '</div>';
             }).join('');
+
+            // Bind edit buttons for handover
+            document.querySelectorAll('.edit-btn[data-type="handover"]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var id = btn.getAttribute('data-id');
+                    var r = handovers[id];
+                    if (r) startEditHandover(Object.assign({}, r, { _id: id }));
+                });
+            });
             applyRoleUI();
         }
 
-        // ─── RENDER LINE REPORT ──────────────────────────────────────────────
+        // ─── HANDOVER EDIT FUNCTIONS ────────────────────────────────────────
+        function startEditHandover(r) {
+            editingHandoverId = r._id;
+            // Pre-fill handover form
+            document.getElementById('h-name').value = r.name || '';
+            document.getElementById('h-role').value = r.role || 'Shift Leader';
+            document.getElementById('h-shift').value = r.shift || getShift();
+            document.getElementById('h-date').value = r.date || '';
+            document.getElementById('h-equipment').value = r.equipment || '';
+            document.getElementById('h-openissues').value = r.openIssues || '';
+            document.getElementById('h-notes').value = r.notes || '';
+            // Restore line statuses
+            var ls = r.lineStatus || {};
+            LINES.forEach(function(l) {
+                var st = ls[l] || 'OK';
+                lineStatus[l] = st;
+                document.querySelectorAll('.ls-btn[data-line="' + l + '"]').forEach(function(b) {
+                    b.className = 'ls-btn' + (b.getAttribute('data-status') === st ? ' active-' + st : '');
+                });
+            });
+            // Change submit button text
+            var submitBtn = document.getElementById('h-submit-btn');
+            submitBtn.textContent = 'Save Edit →';
+            submitBtn.disabled = false;
+            // Show editing banner? We can repurpose the line report banner or create a new one.
+            // For simplicity, we show a toast and rely on the button text.
+            showToast('Editing handover report — save to update.');
+            // Scroll to form
+            document.getElementById('handover-form-card').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEditHandover() {
+            editingHandoverId = null;
+            document.getElementById('h-submit-btn').textContent = 'Submit Handover Report →';
+            // Clear form? Not necessary, but we could reset.
+            document.getElementById('h-name').value = '';
+            document.getElementById('h-equipment').value = '';
+            document.getElementById('h-openissues').value = '';
+            document.getElementById('h-notes').value = '';
+            // Reset line statuses to OK
+            LINES.forEach(function(l) {
+                lineStatus[l] = 'OK';
+                document.querySelectorAll('.ls-btn[data-line="' + l + '"]').forEach(function(b) {
+                    b.className = 'ls-btn' + (b.getAttribute('data-status') === 'OK' ? ' active-OK' : '');
+                });
+            });
+            document.getElementById('h-submit-btn').disabled = true;
+            showToast('Edit cancelled');
+        }
+
+        // Override handover submit to handle edit
+        // We'll modify the existing h-submit-btn listener later.
+
+        // ─── RENDER LINE REPORT (with edit for all, lock after 3) ────────────
         function renderLineReport() {
             var lr = document.getElementById('lr-shift');
             if (lr) lr.value = getShift();
@@ -2513,7 +2579,6 @@
                     '<div class="handover-empty"><div style="font-size:36px;margin-bottom:8px">📊</div><div>No line reports yet</div></div>';
                 return;
             }
-            var isTech = getRole() === 'technician';
             el.innerHTML = arr.map(function(r) {
                 var dt = r.created ? new Date(r.created).toLocaleString([], { month: 'short', day: 'numeric',
                     hour: '2-digit', minute: '2-digit' }) : r.date || '';
@@ -2525,15 +2590,13 @@
                 var editCount = r.editCount || 0;
                 var editsLeft = 3 - editCount;
                 var editSection = '';
-                if (!isTech) {
-                    editSection = editsLeft > 0 ?
-                        '<button class="edit-btn" data-id="' + r._id + '">✏️ Edit</button>' +
+                if (editsLeft > 0) {
+                    editSection = '<button class="edit-btn" data-id="' + r._id +
+                        '" data-type="linereport">✏️ Edit</button>' +
                         '<div class="edit-count">' + editsLeft + ' edit' + (editsLeft > 1 ? 's' : '') +
-                        ' remaining</div>' :
-                        '<div class="edit-locked">🔒 Locked — no more edits allowed</div>';
+                        ' remaining</div>';
                 } else {
-                    editSection =
-                        '<div style="font-size:10px;color:var(--muted);margin-top:8px">👁️ View only</div>';
+                    editSection = '<div class="edit-locked">🔒 Locked — no more edits allowed</div>';
                 }
 
                 return '<div class="handover-card">' +
@@ -2578,9 +2641,8 @@
                     '</div>';
             }).join('');
 
-            document.querySelectorAll('.edit-btn').forEach(function(btn) {
+            document.querySelectorAll('.edit-btn[data-type="linereport"]').forEach(function(btn) {
                 btn.addEventListener('click', function() {
-                    if (!can('editAny')) { showToast('Permission denied'); return; }
                     var id = btn.getAttribute('data-id');
                     var r = lineReports[id];
                     if (r) startEdit(Object.assign({}, r, { _id: id }));
@@ -2589,7 +2651,7 @@
             applyRoleUI();
         }
 
-        // ─── LINE REPORT EDIT ───────────────────────────────────────────────
+        // ─── LINE REPORT EDIT FUNCTIONS (unchanged) ────────────────────────
         function startEdit(r) {
             editingReportId = r._id;
             document.getElementById('lr-name').value = r.name || '';
@@ -2653,42 +2715,80 @@
                 showToast('Issue logged ✓');
             });
 
-            // Handover
+            // Handover submit (including edit)
             document.getElementById('h-name').addEventListener('input', function() {
-                document.getElementById('h-submit-btn').disabled = !this.value.trim();
+                document.getElementById('h-submit-btn').disabled = !this.value.trim() && !editingHandoverId;
+                if (!this.value.trim() && !editingHandoverId) {
+                    document.getElementById('h-submit-btn').disabled = true;
+                } else if (this.value.trim() || editingHandoverId) {
+                    document.getElementById('h-submit-btn').disabled = false;
+                }
             });
             document.getElementById('h-submit-btn').addEventListener('click', function() {
                 var name = document.getElementById('h-name').value.trim();
-                if (!name) return;
-                var openTasks = taskArray().filter(function(t) { return t.status !== 'Resolved'; });
-                var autoCarried = openTasks.length > 0 ? openTasks.map(function(t) { return t.line + ': ' +
-                    t.title + ' [' + t.status + ']'; }).join('\n') : '';
-                var manualCarried = document.getElementById('h-openissues').value.trim();
-                handoverRef.push({
+                if (!name && !editingHandoverId) { showToast('Name required'); return; }
+                if (!name) { showToast('Name required'); return; }
+
+                var data = {
                     name: name,
                     role: document.getElementById('h-role').value,
                     shift: document.getElementById('h-shift').value,
                     date: document.getElementById('h-date').value,
                     lineStatus: lineStatus,
                     equipment: document.getElementById('h-equipment').value.trim(),
-                    openIssues: manualCarried || autoCarried,
-                    notes: document.getElementById('h-notes').value.trim(),
-                    created: Date.now()
-                });
-                document.getElementById('h-name').value = '';
-                document.getElementById('h-equipment').value = '';
-                document.getElementById('h-openissues').value = '';
-                document.getElementById('h-notes').value = '';
-                document.getElementById('h-submit-btn').disabled = true;
-                Object.keys(lineStatus).forEach(function(l) { lineStatus[l] = 'OK'; });
-                document.querySelectorAll('.ls-btn').forEach(function(b) {
-                    b.className = 'ls-btn' + (b.getAttribute('data-status') === 'OK' ? ' active-OK' : '');
-                });
-                showToast('Handover report submitted ✓');
-                renderHandover();
+                    openIssues: document.getElementById('h-openissues').value.trim() || '',
+                    notes: document.getElementById('h-notes').value.trim() || ''
+                };
+
+                if (editingHandoverId) {
+                    // Edit existing handover
+                    var existing = handovers[editingHandoverId] || {};
+                    var editCount = (existing.editCount || 0) + 1;
+                    data.created = existing.created || Date.now();
+                    data.editCount = editCount;
+                    data.lastEdited = Date.now();
+                    handoverRef.child(editingHandoverId).set(data);
+                    showToast('Handover updated (edit ' + editCount + '/3) ✓');
+                    editingHandoverId = null;
+                    document.getElementById('h-submit-btn').textContent = 'Submit Handover Report →';
+                    // Reset form
+                    document.getElementById('h-name').value = '';
+                    document.getElementById('h-equipment').value = '';
+                    document.getElementById('h-openissues').value = '';
+                    document.getElementById('h-notes').value = '';
+                    document.getElementById('h-submit-btn').disabled = true;
+                    Object.keys(lineStatus).forEach(function(l) { lineStatus[l] = 'OK'; });
+                    document.querySelectorAll('.ls-btn').forEach(function(b) {
+                        b.className = 'ls-btn' + (b.getAttribute('data-status') === 'OK' ? ' active-OK' :
+                        '');
+                    });
+                    renderHandover();
+                } else {
+                    // New handover
+                    var openTasks = taskArray().filter(function(t) { return t.status !== 'Resolved'; });
+                    var autoCarried = openTasks.length > 0 ? openTasks.map(function(t) { return t.line + ': ' +
+                        t.title + ' [' + t.status + ']'; }).join('\n') : '';
+                    var manualCarried = document.getElementById('h-openissues').value.trim();
+                    data.openIssues = manualCarried || autoCarried;
+                    data.created = Date.now();
+                    data.editCount = 0;
+                    handoverRef.push(data);
+                    showToast('Handover report submitted ✓');
+                    document.getElementById('h-name').value = '';
+                    document.getElementById('h-equipment').value = '';
+                    document.getElementById('h-openissues').value = '';
+                    document.getElementById('h-notes').value = '';
+                    document.getElementById('h-submit-btn').disabled = true;
+                    Object.keys(lineStatus).forEach(function(l) { lineStatus[l] = 'OK'; });
+                    document.querySelectorAll('.ls-btn').forEach(function(b) {
+                        b.className = 'ls-btn' + (b.getAttribute('data-status') === 'OK' ? ' active-OK' :
+                        '');
+                    });
+                    renderHandover();
+                }
             });
 
-            // Line Report
+            // Line Report submit (unchanged, already handles edit)
             document.getElementById('lr-name').addEventListener('input', function() {
                 document.getElementById('lr-submit-btn').disabled = !this.value.trim() && !editingReportId;
                 if (!this.value.trim() && !editingReportId) {
@@ -2825,7 +2925,7 @@
             });
         }
 
-        // ─── EXPORT FUNCTIONS ───────────────────────────────────────────────
+        // ─── EXPORT FUNCTIONS (unchanged) ───────────────────────────────────
 
         // Export Issues
         document.getElementById('btn-export-issues').addEventListener('click', function() {
@@ -3033,11 +3133,7 @@
         // Check for existing users
         checkUsersExist();
 
-        // If user already logged in (from previous session), we won't have currentUser, so we rely on login.
-        // On page load, show login overlay; app hidden.
-
-        console.log('🔐 SMT Control Center with Name+Badge Login & Admin User Management');
-        console.log('👤 First-time: create admin using the form.');
+        console.log('🔐 SMT Control Center – Technicians can now edit reports (3 edits max)');
     </script>
 </body>
 </html>
