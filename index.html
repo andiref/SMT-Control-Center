@@ -1487,6 +1487,35 @@
         #app .issue-rca-input::placeholder { color: var(--border); }
         #app .issue-rca-input:focus { background: var(--surface2); }
 
+        #app .issue-meta-inputs {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        #app .issue-meta-input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 11px;
+            font-family: var(--font);
+            padding: 4px 7px;
+            outline: none;
+            width: 74px;
+            height: 28px;
+        }
+        #app .issue-meta-input:focus { border-color: var(--accent); }
+        #app .issue-meta-input::placeholder { color: var(--muted); }
+        #app .issue-qty { width: 50px; }
+        #app .issue-card-row.has-error {
+            border-color: var(--critical) !important;
+            border-bottom-color: var(--critical) !important;
+        }
+        #app .issue-rca-input.has-error,
+        #app .issue-name-input.has-error {
+            background: #1c0808;
+        }
+
         /* ─── RESPONSIVE ─── */
         @media (max-width: 400px) {
             #app .header-title {
@@ -1698,21 +1727,25 @@
                         <div class="form-group" style="margin-bottom:0"><label>🏷 Model</label><input id="lr-model" type="text" placeholder="e.g. PCB-A123" /></div>
                     </div>
                     <div class="form-group">
-                        <label>🔍 Quality Issues</label>
+                        <label>🔍 Quality Issues <span style="color:var(--critical);font-size:10px">* all filled issues must be complete</span></label>
                         <!-- Issue 1 -->
                         <div class="issue-block">
                             <div class="issue-card-row">
                                 <div class="issue-rank rank-1">#1</div>
-                                <input class="issue-name-input" id="lr-issue1" type="text" placeholder="e.g. Solder bridge" />
+                                <input class="issue-name-input issue-trigger" id="lr-issue1" type="text" placeholder="Defect name *" />
+                                <div class="issue-meta-inputs">
+                                    <input class="issue-meta-input" id="lr-loc1" type="text" placeholder="Location" />
+                                    <input class="issue-meta-input issue-qty" id="lr-qty1" type="number" placeholder="Qty" min="1" />
+                                </div>
                             </div>
                             <div class="issue-rca-block">
                                 <div class="issue-rca-row">
                                     <div class="issue-rca-label">Root cause</div>
-                                    <textarea class="issue-rca-input" id="lr-rootcause1" placeholder="e.g. Stencil aperture blocked, paste dried"></textarea>
+                                    <textarea class="issue-rca-input issue-trigger" id="lr-rootcause1" placeholder="Root cause *"></textarea>
                                 </div>
                                 <div class="issue-rca-row">
                                     <div class="issue-rca-label">Corrective action</div>
-                                    <textarea class="issue-rca-input" id="lr-action1" placeholder="e.g. Cleaned stencil, re-ran SPI check"></textarea>
+                                    <textarea class="issue-rca-input issue-trigger" id="lr-action1" placeholder="Corrective action *"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -1720,16 +1753,20 @@
                         <div class="issue-block">
                             <div class="issue-card-row">
                                 <div class="issue-rank rank-2">#2</div>
-                                <input class="issue-name-input" id="lr-issue2" type="text" placeholder="e.g. Missing component" />
+                                <input class="issue-name-input issue-trigger" id="lr-issue2" type="text" placeholder="Defect name" />
+                                <div class="issue-meta-inputs">
+                                    <input class="issue-meta-input" id="lr-loc2" type="text" placeholder="Location" />
+                                    <input class="issue-meta-input issue-qty" id="lr-qty2" type="number" placeholder="Qty" min="1" />
+                                </div>
                             </div>
                             <div class="issue-rca-block">
                                 <div class="issue-rca-row">
                                     <div class="issue-rca-label">Root cause</div>
-                                    <textarea class="issue-rca-input" id="lr-rootcause2" placeholder="e.g. Feeder jam on slot 14"></textarea>
+                                    <textarea class="issue-rca-input issue-trigger" id="lr-rootcause2" placeholder="Root cause"></textarea>
                                 </div>
                                 <div class="issue-rca-row">
                                     <div class="issue-rca-label">Corrective action</div>
-                                    <textarea class="issue-rca-input" id="lr-action2" placeholder="e.g. Replaced feeder, ran pick verification"></textarea>
+                                    <textarea class="issue-rca-input issue-trigger" id="lr-action2" placeholder="Corrective action"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -1737,19 +1774,24 @@
                         <div class="issue-block" style="margin-bottom:0">
                             <div class="issue-card-row">
                                 <div class="issue-rank rank-3">#3</div>
-                                <input class="issue-name-input" id="lr-issue3" type="text" placeholder="e.g. Tombstone" />
+                                <input class="issue-name-input issue-trigger" id="lr-issue3" type="text" placeholder="Defect name" />
+                                <div class="issue-meta-inputs">
+                                    <input class="issue-meta-input" id="lr-loc3" type="text" placeholder="Location" />
+                                    <input class="issue-meta-input issue-qty" id="lr-qty3" type="number" placeholder="Qty" min="1" />
+                                </div>
                             </div>
                             <div class="issue-rca-block">
                                 <div class="issue-rca-row">
                                     <div class="issue-rca-label">Root cause</div>
-                                    <textarea class="issue-rca-input" id="lr-rootcause3" placeholder="e.g. Uneven paste deposit"></textarea>
+                                    <textarea class="issue-rca-input issue-trigger" id="lr-rootcause3" placeholder="Root cause"></textarea>
                                 </div>
                                 <div class="issue-rca-row">
                                     <div class="issue-rca-label">Corrective action</div>
-                                    <textarea class="issue-rca-input" id="lr-action3" placeholder="e.g. Adjusted reflow profile, rework completed"></textarea>
+                                    <textarea class="issue-rca-input issue-trigger" id="lr-action3" placeholder="Corrective action"></textarea>
                                 </div>
                             </div>
                         </div>
+                        <div id="lr-issue-error" style="display:none;color:var(--critical);font-size:11px;margin-top:8px;padding:6px 10px;background:#450a0a;border-radius:6px;border:1px solid #7f1d1d"></div>
                     </div>
                     <div class="form-group" style="margin-top:4px">
                         <label>⏱ Machine Cycle Time (CT) — seconds</label>
@@ -2683,16 +2725,19 @@
                         '<div class="handover-section-title">🔍 Quality Issues — Model: ' + esc(r.model || '-') + '</div>' +
                         (function() {
                             var issues = [
-                                { name: r.issue1 || (r.issues ? r.issues.split('\n')[0] : ''), rc: r.rootcause1 || r.rootcause || '', ac: r.action1 || r.action || '' },
-                                { name: r.issue2 || (r.issues ? r.issues.split('\n')[1] : ''), rc: r.rootcause2 || '', ac: r.action2 || '' },
-                                { name: r.issue3 || (r.issues ? r.issues.split('\n')[2] : ''), rc: r.rootcause3 || '', ac: r.action3 || '' }
+                                { name: r.issue1 || (r.issues ? r.issues.split('\n')[0] : ''), loc: r.loc1 || '', qty: r.qty1 || '', rc: r.rootcause1 || r.rootcause || '', ac: r.action1 || r.action || '' },
+                                { name: r.issue2 || (r.issues ? r.issues.split('\n')[1] : ''), loc: r.loc2 || '', qty: r.qty2 || '', rc: r.rootcause2 || '', ac: r.action2 || '' },
+                                { name: r.issue3 || (r.issues ? r.issues.split('\n')[2] : ''), loc: r.loc3 || '', qty: r.qty3 || '', rc: r.rootcause3 || '', ac: r.action3 || '' }
                             ];
                             var ranks = ['rank-1','rank-2','rank-3'];
                             return issues.filter(function(i) { return i.name || i.rc || i.ac; }).map(function(item, idx) {
+                                var metaBadges = '';
+                                if (item.loc) metaBadges += '<span style="font-size:10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--muted);margin-left:6px">' + esc(item.loc) + '</span>';
+                                if (item.qty) metaBadges += '<span style="font-size:10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--accent2);margin-left:4px">×' + esc(item.qty) + '</span>';
                                 return '<div class="issue-block" style="margin-bottom:8px">' +
                                     '<div class="issue-card-row" style="background:var(--surface2)">' +
                                     '<div class="issue-rank ' + ranks[idx] + '">#' + (idx + 1) + '</div>' +
-                                    '<div style="font-size:13px;font-weight:600;color:#fff">' + esc(item.name || '—') + '</div>' +
+                                    '<div style="font-size:13px;font-weight:600;color:#fff;flex:1">' + esc(item.name || '—') + metaBadges + '</div>' +
                                     '</div>' +
                                     '<div class="issue-rca-block">' +
                                     (item.rc ? '<div class="issue-rca-row"><div class="issue-rca-label">Root cause</div><div style="font-size:12px;color:var(--text);padding:8px 10px;flex:1;line-height:1.5">' + esc(item.rc) + '</div></div>' : '') +
@@ -2744,12 +2789,18 @@
             document.getElementById('lr-date').value = r.date || '';
             document.getElementById('lr-model').value = r.model || '';
             document.getElementById('lr-issue1').value = r.issue1 || r.issues || '';
+            document.getElementById('lr-loc1').value = r.loc1 || '';
+            document.getElementById('lr-qty1').value = r.qty1 || '';
             document.getElementById('lr-rootcause1').value = r.rootcause1 || r.rootcause || '';
             document.getElementById('lr-action1').value = r.action1 || r.action || '';
             document.getElementById('lr-issue2').value = r.issue2 || '';
+            document.getElementById('lr-loc2').value = r.loc2 || '';
+            document.getElementById('lr-qty2').value = r.qty2 || '';
             document.getElementById('lr-rootcause2').value = r.rootcause2 || '';
             document.getElementById('lr-action2').value = r.action2 || '';
             document.getElementById('lr-issue3').value = r.issue3 || '';
+            document.getElementById('lr-loc3').value = r.loc3 || '';
+            document.getElementById('lr-qty3').value = r.qty3 || '';
             document.getElementById('lr-rootcause3').value = r.rootcause3 || '';
             document.getElementById('lr-action3').value = r.action3 || '';
             var ct = r.ct || {};
@@ -2768,11 +2819,16 @@
             editingReportId = null;
             document.getElementById('lr-edit-banner').classList.remove('show');
             document.getElementById('lr-submit-btn').textContent = 'Submit Line Report →';
-            ['lr-model', 'lr-issue1', 'lr-rootcause1', 'lr-action1',
-                'lr-issue2', 'lr-rootcause2', 'lr-action2',
-                'lr-issue3', 'lr-rootcause3', 'lr-action3',
+            ['lr-model',
+                'lr-issue1', 'lr-loc1', 'lr-qty1', 'lr-rootcause1', 'lr-action1',
+                'lr-issue2', 'lr-loc2', 'lr-qty2', 'lr-rootcause2', 'lr-action2',
+                'lr-issue3', 'lr-loc3', 'lr-qty3', 'lr-rootcause3', 'lr-action3',
                 'lr-ct-printing', 'lr-ct-spi', 'lr-ct-pp1', 'lr-ct-pp2', 'lr-ct-pp3'
             ].forEach(function(id) { document.getElementById(id).value = ''; });
+            document.querySelectorAll('.issue-name-input, .issue-rca-input').forEach(function(el) { el.classList.remove('has-error'); });
+            document.querySelectorAll('.issue-card-row').forEach(function(el) { el.classList.remove('has-error'); });
+            var errEl = document.getElementById('lr-issue-error');
+            if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
             document.getElementById('lr-submit-btn').disabled = false;
         }
 
@@ -2863,9 +2919,61 @@
                 }
             });
 
-            // Line Report submit
+            // ─── LINE REPORT VALIDATION ──────────────────────────────────────────
+        function validateLineReportIssues() {
+            var issues = [
+                { name: 'lr-issue1', rc: 'lr-rootcause1', ac: 'lr-action1', row: 0 },
+                { name: 'lr-issue2', rc: 'lr-rootcause2', ac: 'lr-action2', row: 1 },
+                { name: 'lr-issue3', rc: 'lr-rootcause3', ac: 'lr-action3', row: 2 }
+            ];
+            var errEl = document.getElementById('lr-issue-error');
+            var rows = document.querySelectorAll('.issue-card-row');
+            var errors = [];
+
+            // Clear previous error states
+            document.querySelectorAll('.issue-name-input, .issue-rca-input').forEach(function(el) { el.classList.remove('has-error'); });
+            rows.forEach(function(el) { el.classList.remove('has-error'); });
+
+            // Must have at least issue #1 filled
+            var hasAny = issues.some(function(i) { return document.getElementById(i.name).value.trim(); });
+            if (!hasAny) {
+                errors.push('At least one quality issue is required.');
+                rows[0].classList.add('has-error');
+                document.getElementById('lr-issue1').classList.add('has-error');
+            }
+
+            // Any filled issue must have name + root cause + corrective action
+            issues.forEach(function(i, idx) {
+                var nameVal = document.getElementById(i.name).value.trim();
+                var rcVal = document.getElementById(i.rc).value.trim();
+                var acVal = document.getElementById(i.ac).value.trim();
+                var anyFilled = nameVal || rcVal || acVal;
+                if (anyFilled) {
+                    var missing = [];
+                    if (!nameVal) { missing.push('defect name'); document.getElementById(i.name).classList.add('has-error'); rows[idx].classList.add('has-error'); }
+                    if (!rcVal)   { missing.push('root cause');   document.getElementById(i.rc).classList.add('has-error'); }
+                    if (!acVal)   { missing.push('corrective action'); document.getElementById(i.ac).classList.add('has-error'); }
+                    if (missing.length) {
+                        errors.push('Issue #' + (idx + 1) + ': missing ' + missing.join(', ') + '.');
+                    }
+                }
+            });
+
+            if (errors.length) {
+                errEl.textContent = '⚠️ ' + errors.join(' ');
+                errEl.style.display = 'block';
+                errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                return false;
+            }
+            errEl.style.display = 'none';
+            errEl.textContent = '';
+            return true;
+        }
+
+        // Line Report submit
             document.getElementById('lr-submit-btn').addEventListener('click', function() {
                 if (!currentUser) { showToast('Not logged in'); return; }
+                if (!validateLineReportIssues()) return;
                 if (editingReportId) {
                     var original = lineReports[editingReportId];
                     if (!original) { showToast('Report not found'); return; }
@@ -2877,12 +2985,18 @@
                         date: document.getElementById('lr-date').value,
                         model: document.getElementById('lr-model').value.trim(),
                         issue1: document.getElementById('lr-issue1').value.trim(),
+                        loc1: document.getElementById('lr-loc1').value.trim(),
+                        qty1: document.getElementById('lr-qty1').value || '',
                         rootcause1: document.getElementById('lr-rootcause1').value.trim(),
                         action1: document.getElementById('lr-action1').value.trim(),
                         issue2: document.getElementById('lr-issue2').value.trim(),
+                        loc2: document.getElementById('lr-loc2').value.trim(),
+                        qty2: document.getElementById('lr-qty2').value || '',
                         rootcause2: document.getElementById('lr-rootcause2').value.trim(),
                         action2: document.getElementById('lr-action2').value.trim(),
                         issue3: document.getElementById('lr-issue3').value.trim(),
+                        loc3: document.getElementById('lr-loc3').value.trim(),
+                        qty3: document.getElementById('lr-qty3').value || '',
                         rootcause3: document.getElementById('lr-rootcause3').value.trim(),
                         action3: document.getElementById('lr-action3').value.trim(),
                         ct: {
@@ -2910,12 +3024,18 @@
                         date: document.getElementById('lr-date').value,
                         model: document.getElementById('lr-model').value.trim(),
                         issue1: document.getElementById('lr-issue1').value.trim(),
+                        loc1: document.getElementById('lr-loc1').value.trim(),
+                        qty1: document.getElementById('lr-qty1').value || '',
                         rootcause1: document.getElementById('lr-rootcause1').value.trim(),
                         action1: document.getElementById('lr-action1').value.trim(),
                         issue2: document.getElementById('lr-issue2').value.trim(),
+                        loc2: document.getElementById('lr-loc2').value.trim(),
+                        qty2: document.getElementById('lr-qty2').value || '',
                         rootcause2: document.getElementById('lr-rootcause2').value.trim(),
                         action2: document.getElementById('lr-action2').value.trim(),
                         issue3: document.getElementById('lr-issue3').value.trim(),
+                        loc3: document.getElementById('lr-loc3').value.trim(),
+                        qty3: document.getElementById('lr-qty3').value || '',
                         rootcause3: document.getElementById('lr-rootcause3').value.trim(),
                         action3: document.getElementById('lr-action3').value.trim(),
                         ct: {
@@ -2930,11 +3050,14 @@
                     };
                     lineReportRef.push(data);
                     showToast('Line report submitted ✓');
-                    ['lr-model', 'lr-issue1', 'lr-rootcause1', 'lr-action1',
-                        'lr-issue2', 'lr-rootcause2', 'lr-action2',
-                        'lr-issue3', 'lr-rootcause3', 'lr-action3',
+                    ['lr-model',
+                        'lr-issue1', 'lr-loc1', 'lr-qty1', 'lr-rootcause1', 'lr-action1',
+                        'lr-issue2', 'lr-loc2', 'lr-qty2', 'lr-rootcause2', 'lr-action2',
+                        'lr-issue3', 'lr-loc3', 'lr-qty3', 'lr-rootcause3', 'lr-action3',
                         'lr-ct-printing', 'lr-ct-spi', 'lr-ct-pp1', 'lr-ct-pp2', 'lr-ct-pp3'
                     ].forEach(function(id) { document.getElementById(id).value = ''; });
+                    var errEl = document.getElementById('lr-issue-error');
+                    if (errEl) { errEl.style.display = 'none'; }
                     renderLineReport();
                 }
             });
@@ -3188,12 +3311,18 @@
                     'Shift': r.shift || '',
                     'Model': r.model || '',
                     'Issue #1': r.issue1 || r.issues || '',
+                    'Location #1': r.loc1 || '',
+                    'Qty #1': r.qty1 || '',
                     'Root Cause #1': r.rootcause1 || r.rootcause || '',
                     'Corrective Action #1': r.action1 || r.action || '',
                     'Issue #2': r.issue2 || '',
+                    'Location #2': r.loc2 || '',
+                    'Qty #2': r.qty2 || '',
                     'Root Cause #2': r.rootcause2 || '',
                     'Corrective Action #2': r.action2 || '',
                     'Issue #3': r.issue3 || '',
+                    'Location #3': r.loc3 || '',
+                    'Qty #3': r.qty3 || '',
                     'Root Cause #3': r.rootcause3 || '',
                     'Corrective Action #3': r.action3 || ''
                 };
