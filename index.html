@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="theme-color" content="#0a0a0f"/>
+<title>SMT Control Center</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c26;--border:#2a2a3a;
+  --text:#e8e8f0;--muted:#6b6b80;--accent:#3b82f6;--accent2:#60a5fa;
+  --critical:#ef4444;--high:#f97316;--medium:#eab308;--low:#22c55e;
+  --green:#22c55e;--radius:12px;
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.4;}
+body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+#sync-bar{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);padding:4px 16px;background:var(--surface);border-bottom:1px solid var(--border);}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);}
+.sync-dot.live{background:var(--green);animation:pulse 2s infinite;}
+.sync-dot.error{background:var(--critical);}
+#header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px 10px;position:sticky;top:0;z-index:100;}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.header-title{font-size:20px;font-weight:800;letter-spacing:-0.5px;color:#fff;}
+.header-sub{font-size:11px;color:var(--accent2);margin-top:2px;}
+.header-label{font-size:10px;color:var(--muted);}
+.header-counts{display:flex;gap:8px;align-items:center;}
+.count-pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center;}
+.count-pill .num{font-size:18px;font-weight:800;line-height:1;}
+.count-pill .lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.count-pill.open .num{color:#fff;}
+.count-pill.done .num{color:var(--green);}
+.critical-banner{background:var(--critical);color:#fff;font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px;animation:pulse 1.2s infinite;}
+#line-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:12px 16px 0;}
+.line-card{border-radius:10px;padding:8px 4px;border:2px solid var(--border);background:var(--surface2);text-align:center;cursor:pointer;transition:transform .1s;}
+.line-card:active{transform:scale(.95);}
+.line-card .lname{font-size:13px;font-weight:800;color:#fff;}
+.line-card .ldot{width:8px;height:8px;border-radius:50%;margin:4px auto 3px;}
+.line-card .lcount{font-size:9px;color:var(--muted);}
+.line-card.clear{border-color:#22c55e44;}.line-card.clear .ldot{background:var(--green);}
+.line-card.med{border-color:#eab30844;}.line-card.med .ldot{background:var(--medium);}
+.line-card.hi{border-color:#f9731644;}.line-card.hi .ldot{background:var(--high);}
+.line-card.crit{border-color:#ef444466;}.line-card.crit .ldot{background:var(--critical);animation:pulse 1s infinite;}
+#nav{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px 8px;}
+.nav-btn{flex:1;min-width:calc(50% - 4px);padding:9px 4px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+.nav-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+#main{flex:1;overflow-y:auto;padding:0 16px 80px;}
+#main::-webkit-scrollbar{width:4px;}
+#main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+#filters{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;}
+#filters::-webkit-scrollbar{display:none;}
+.filter-sel{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 24px 6px 10px;font-size:11px;flex-shrink:0;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6b80' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;cursor:pointer;}
+.clear-btn{background:none;border:none;color:var(--accent2);font-size:11px;cursor:pointer;flex-shrink:0;padding:6px 4px;}
+.task-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);border-left:4px solid;margin-bottom:8px;overflow:hidden;}
+.task-card[data-priority="Critical"]{border-left-color:var(--critical);}
+.task-card[data-priority="High"]{border-left-color:var(--high);}
+.task-card[data-priority="Medium"]{border-left-color:var(--medium);}
+.task-card[data-priority="Low"]{border-left-color:var(--low);}
+.task-header{display:flex;align-items:flex-start;gap:8px;padding:12px 12px 10px;cursor:pointer;}
+.task-meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px;}
+.badge{font-size:10px;font-weight:600;border-radius:6px;padding:2px 7px;border:1px solid;}
+.badge-line{background:#1e293b;color:#94a3b8;border-color:#334155;}
+.badge-Critical{background:#450a0a;color:#fca5a5;border-color:#7f1d1d;}
+.badge-High{background:#431407;color:#fdba74;border-color:#7c2d12;}
+.badge-Medium{background:#422006;color:#fde047;border-color:#713f12;}
+.badge-Low{background:#052e16;color:#86efac;border-color:#14532d;}
+.badge-Open{background:#450a0a;color:#fca5a5;border-color:#7f1d1d;}
+.badge-InProgress{background:#172554;color:#93c5fd;border-color:#1e3a8a;}
+.badge-PendingParts{background:#2e1065;color:#d8b4fe;border-color:#4c1d95;}
+.badge-Resolved{background:#052e16;color:#86efac;border-color:#14532d;}
+.task-title{font-size:13px;font-weight:600;color:#fff;line-height:1.3;}
+.task-info{font-size:11px;color:var(--muted);margin-top:3px;}
+.task-delete{background:none;border:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:0 0 0 4px;flex-shrink:0;}
+.task-body{display:none;padding:0 12px 12px;border-top:1px solid var(--border);}
+.task-body.open{display:block;}
+.task-note{font-size:12px;color:var(--muted);margin:10px 0;line-height:1.5;}
+.status-row{display:flex;flex-wrap:wrap;gap:6px;}
+.status-btn{font-size:11px;font-weight:600;border-radius:20px;padding:4px 12px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;}
+.status-btn.s-Open{background:#450a0a;color:#fca5a5;border-color:#7f1d1d;}
+.status-btn.s-InProgress{background:#172554;color:#93c5fd;border-color:#1e3a8a;}
+.status-btn.s-PendingParts{background:#2e1065;color:#d8b4fe;border-color:#4c1d95;}
+.status-btn.s-Resolved{background:#052e16;color:#86efac;border-color:#14532d;}
+.empty{text-align:center;padding:48px 16px;color:var(--muted);}
+.empty-icon{font-size:40px;margin-bottom:8px;}
+#add-view{display:none;}
+#add-view.active{display:block;}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+.form-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.form-group{margin-bottom:10px;}
+label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500;}
+input,select,textarea{width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:var(--font);outline:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+textarea{resize:none;height:72px;line-height:1.5;}
+input::placeholder,textarea::placeholder{color:var(--muted);}
+.submit-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;}
+.submit-btn:disabled{background:var(--surface2);color:var(--muted);cursor:not-allowed;}
+#summary-view{display:none;}
+#summary-view.active{display:block;}
+.summary-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.summary-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;}
+.line-row{margin-bottom:10px;}
+.line-row-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+.line-row-name{font-weight:700;color:#fff;}
+.line-row-count{color:var(--muted);}
+.progress-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--green);border-radius:3px;}
+.cat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.cat-row:last-child{border-bottom:none;}
+.cat-count{font-weight:800;color:#fff;}
+.priority-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.prio-box{border-radius:10px;padding:10px 4px;text-align:center;border:1px solid;}
+.prio-box .pnum{font-size:26px;font-weight:800;line-height:1;}
+.prio-box .plbl{font-size:9px;font-weight:600;margin-top:2px;text-transform:uppercase;}
+.prio-box.c-Critical{background:#450a0a;border-color:#7f1d1d;}.prio-box.c-Critical .pnum,.prio-box.c-Critical .plbl{color:#fca5a5;}
+.prio-box.c-High{background:#431407;border-color:#7c2d12;}.prio-box.c-High .pnum,.prio-box.c-High .plbl{color:#fdba74;}
+.prio-box.c-Medium{background:#422006;border-color:#713f12;}.prio-box.c-Medium .pnum,.prio-box.c-Medium .plbl{color:#fde047;}
+.prio-box.c-Low{background:#052e16;border-color:#14532d;}.prio-box.c-Low .pnum,.prio-box.c-Low .plbl{color:#86efac;}
+.unassigned-card{background:#1c0a0a;border:1px solid #7f1d1d;border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.unassigned-title{font-size:10px;font-weight:700;color:#fca5a5;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.unassigned-item{font-size:12px;color:#fca5a5;padding:4px 0;border-bottom:1px solid #7f1d1d22;}
+.unassigned-item:last-child{border-bottom:none;}
+.task-archive{background:none;border:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:0 0 0 4px;flex-shrink:0;}
+.task-archive:hover{color:var(--medium);}
+/* Confirm modal */
+#confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:center;justify-content:center;}
+#confirm-overlay.show{display:flex;}
+#confirm-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 20px;max-width:300px;width:90%;text-align:center;}
+#confirm-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:6px;}
+#confirm-msg{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.5;}
+.confirm-btns{display:flex;gap:10px;}
+.confirm-yes{flex:1;background:var(--critical);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;}
+.confirm-no{flex:1;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;}
+/* Archive card */
+.archive-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);border-left:4px solid var(--muted);margin-bottom:8px;padding:12px;opacity:.75;}
+.archive-card-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px;}
+.archive-card-info{font-size:11px;color:var(--muted);}
+.archive-card-actions{display:flex;gap:8px;margin-top:10px;}
+.restore-btn{flex:1;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;}
+.delete-btn{background:var(--surface2);color:var(--critical);border:1px solid var(--critical);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;}
+.archive-empty{text-align:center;padding:48px 16px;color:var(--muted);}
+/* Handover */
+.line-status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px;}
+.line-status-item{border-radius:10px;border:1px solid var(--border);background:var(--surface2);padding:8px 4px;text-align:center;}
+.line-status-item .ls-name{font-size:12px;font-weight:800;color:#fff;margin-bottom:6px;}
+.ls-btns{display:flex;gap:4px;justify-content:center;}
+.ls-btn{font-size:9px;font-weight:700;border-radius:6px;padding:3px 6px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;}
+.ls-btn.active-OK{background:#052e16;color:#86efac;border-color:#14532d;}
+.ls-btn.active-Issue{background:#422006;color:#fde047;border-color:#713f12;}
+.ls-btn.active-Down{background:#450a0a;color:#fca5a5;border-color:#7f1d1d;}
+.handover-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.handover-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.handover-card-who{font-size:13px;font-weight:700;color:#fff;}
+.handover-card-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.handover-shift-badge{font-size:10px;font-weight:700;background:var(--accent);color:#fff;border-radius:6px;padding:3px 8px;flex-shrink:0;}
+.handover-section{margin-bottom:10px;}
+.handover-section-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
+.handover-line-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px;}
+.hl-badge{font-size:10px;font-weight:700;border-radius:6px;padding:2px 8px;border:1px solid;}
+.hl-OK{background:#052e16;color:#86efac;border-color:#14532d;}
+.hl-Issue{background:#422006;color:#fde047;border-color:#713f12;}
+.hl-Down{background:#450a0a;color:#fca5a5;border-color:#7f1d1d;}
+.handover-text{font-size:12px;color:var(--text);line-height:1.5;white-space:pre-wrap;}
+.handover-empty{text-align:center;padding:40px 16px;color:var(--muted);}
+/* Quality Issues per Line */
+.quality-line-block{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.quality-line-title{font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:8px;}
+.quality-row{display:grid;grid-template-columns:1fr;gap:6px;}
+.quality-field{}
+.quality-field label{font-size:10px;color:var(--muted);margin-bottom:3px;display:block;}
+.quality-field input,.quality-field textarea{font-size:12px;padding:7px 10px;}
+.quality-field textarea{height:54px;resize:none;}
+/* CT Table */
+.ct-table{border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.ct-header{display:grid;grid-template-columns:48px repeat(5,1fr);background:var(--surface2);border-bottom:1px solid var(--border);}
+.ct-row{display:grid;grid-template-columns:48px repeat(5,1fr);border-bottom:1px solid var(--border);}
+.ct-row:last-child{border-bottom:none;}
+.ct-cell{padding:7px 4px;font-size:10px;font-weight:600;color:var(--muted);text-align:center;border-right:1px solid var(--border);}
+.ct-cell:last-child{border-right:none;}
+.ct-cell.ct-line{font-size:11px;font-weight:800;color:#fff;background:var(--surface2);}
+.ct-input{width:100%;background:transparent;border:none;color:var(--text);font-size:12px;text-align:center;padding:6px 2px;outline:none;}
+.ct-input:focus{background:var(--surface2);}
+/* Handover history */
+.ho-table{width:100%;border-collapse:collapse;font-size:11px;min-width:400px;}
+.ho-table th{background:var(--surface2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.4px;padding:6px 8px;text-align:left;border:1px solid var(--border);}
+.ho-table td{padding:6px 8px;border:1px solid var(--border);color:var(--text);vertical-align:top;line-height:1.4;}
+.ho-table tr:nth-child(even) td{background:var(--surface2);}
+/* Handover history */
+.ct-row-single{display:grid;grid-template-columns:repeat(5,1fr);}
+.edit-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;margin-top:8px;}
+.edit-btn:hover{background:#2563eb;}
+.edit-locked{font-size:10px;color:var(--muted);margin-top:8px;display:flex;align-items:center;gap:4px;}
+.edit-count{font-size:10px;color:var(--accent2);margin-top:6px;}
+.form-editing-banner{background:#172554;border:1px solid #1e3a8a;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#93c5fd;display:none;}
+.form-editing-banner.show{display:block;}
+.cancel-edit-btn{background:none;border:1px solid #1e3a8a;border-radius:6px;color:#93c5fd;font-size:11px;padding:3px 10px;cursor:pointer;margin-left:8px;}
+.export-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.export-panel-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;}
+.export-btn{width:100%;background:#16a34a;color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;margin-bottom:10px;}
+.export-btn:hover{background:#15803d;}
+.export-btn:active{transform:scale(.98);}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e293b;color:#fff;border:1px solid var(--border);border-radius:20px;padding:8px 20px;font-size:13px;font-weight:500;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:999;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+#loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:32px;color:var(--muted);font-size:13px;}
+</style>
+</head>
+<body>
+
+<div id="sync-bar">
+  <div class="sync-dot" id="sync-dot"></div>
+  <span id="sync-label">Connecting to Firebase…</span>
+  <span style="margin-left:auto" id="sync-time"></span>
+</div>
+
+<div id="header">
+  <div class="header-top">
+    <div>
+      <div class="header-label" id="date-label"></div>
+      <div class="header-title">SMT Control Center</div>
+      <div class="header-sub" id="shift-label"></div>
+    </div>
+    <div class="header-counts">
+      <div id="critical-banner" class="critical-banner" style="display:none">🚨 <span id="critical-num">0</span> CRITICAL</div>
+      <div class="count-pill open"><div class="num" id="open-count">0</div><div class="lbl">Open</div></div>
+      <div class="count-pill done"><div class="num" id="done-count">0</div><div class="lbl">Done</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="line-grid"></div>
+
+<div id="nav">
+  <button class="nav-btn active" id="btn-board">📋 Tasks</button>
+  <button class="nav-btn" id="btn-add">➕ Log Issue</button>
+  <button class="nav-btn" id="btn-linereport">📊 Line Report</button>
+  <button class="nav-btn" id="btn-handover">🔄 Handover</button>
+  <button class="nav-btn" id="btn-summary">📈 Summary</button>
+  <button class="nav-btn" id="btn-archive">📦 Archive</button>
+</div>
+
+<div id="main">
+  <div id="board-view">
+    <div id="filters">
+      <select class="filter-sel" id="fl"><option value="">All Lines</option><option>L1</option><option>L2</option><option>L3</option><option>L4</option><option>L5</option><option>L6</option></select>
+      <select class="filter-sel" id="fp"><option value="">All Priority</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+      <select class="filter-sel" id="fs"><option value="">All Status</option><option>Open</option><option>In Progress</option><option>Pending Parts</option><option>Resolved</option></select>
+      <button class="clear-btn" id="btn-clear-filters">Clear</button>
+    </div>
+    <div id="task-list"><div id="loading"><div class="spinner"></div>Connecting…</div></div>
+  </div>
+
+  <div id="add-view">
+    <div class="form-card">
+      <div class="form-title">🆕 Log New Issue / Task</div>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0"><label>Line</label><select id="f-line"><option>L1</option><option>L2</option><option>L3</option><option>L4</option><option>L5</option><option>L6</option></select></div>
+        <div class="form-group" style="margin-bottom:0"><label>Shift</label><select id="f-shift"><option>Shift 1 (7AM-3PM)</option><option>Shift 2 (3PM-11PM)</option><option>Shift 3 (11PM-7AM)</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0"><label>Category</label><select id="f-cat"><option>Quality Issue</option><option>Equipment Fault</option><option>Process Issue</option><option>Technician Task</option><option>Preventive Maint.</option></select></div>
+        <div class="form-group" style="margin-bottom:0"><label>Priority</label><select id="f-priority"><option>Critical</option><option selected>High</option><option>Medium</option><option>Low</option></select></div>
+      </div>
+      <div class="form-group" style="margin-top:10px"><label>Issue Title *</label><input id="f-title" type="text" placeholder="e.g. Solder bridge on L3 AOI station"/></div>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0"><label>Assigned To</label><input id="f-assignee" type="text" placeholder="Tech name"/></div>
+        <div class="form-group" style="margin-bottom:0"><label>Time Found</label><input id="f-time" type="time"/></div>
+      </div>
+      <div class="form-group" style="margin-top:10px"><label>Notes / Initial Findings</label><textarea id="f-note" placeholder="What was observed? Next step?"></textarea></div>
+      <button class="submit-btn" id="submit-btn" disabled>Log Issue →</button>
+    </div>
+  </div>
+
+  <div id="summary-view">
+    <div class="summary-card"><div class="summary-title">Issues by Line</div><div id="sum-lines"></div></div>
+    <div class="summary-card"><div class="summary-title">Open by Category</div><div id="sum-cats"></div></div>
+    <div class="summary-card"><div class="summary-title">Open by Priority</div><div class="priority-grid" id="sum-priority"></div></div>
+    <div id="sum-unassigned"></div>
+
+    <!-- Export Panel -->
+    <div class="export-panel">
+      <div class="export-panel-title">⬇️ Export to Excel</div>
+      <div class="form-row" style="margin-bottom:8px">
+        <div class="form-group" style="margin-bottom:0">
+          <label>Date From</label>
+          <input type="date" id="exp-from"/>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Date To</label>
+          <input type="date" id="exp-to"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="export-btn" id="btn-export-issues" style="margin:0">📋 Export Issues</button>
+        <button class="export-btn" id="btn-export-summary" style="margin:0;background:#7c3aed">📊 Export Summary</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCHIVE VIEW -->
+  <div id="archive-view" style="display:none">
+    <div id="archive-list"></div>
+  </div>
+
+  <!-- HANDOVER VIEW -->
+  <div id="handover-view" style="display:none">
+
+    <!-- Submit Form -->
+    <div class="form-card" id="handover-form-card">
+      <div class="form-title">🔄 Shift Handover Report</div>
+
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0">
+          <label>Submitted By *</label>
+          <input id="h-name" type="text" placeholder="Your name"/>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Role</label>
+          <select id="h-role">
+            <option>Shift Leader</option>
+            <option>Technician</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0">
+          <label>Shift Ending</label>
+          <select id="h-shift">
+            <option>Shift 1 (7AM-3PM)</option>
+            <option>Shift 2 (3PM-11PM)</option>
+            <option>Shift 3 (11PM-7AM)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Date</label>
+          <input id="h-date" type="date"/>
+        </div>
+      </div>
+
+      <!-- Line Status -->
+      <div class="form-group" style="margin-top:12px">
+        <label>🏭 Line Status</label>
+        <div id="h-line-status" class="line-status-grid"></div>
+      </div>
+
+      <!-- Equipment Notes -->
+      <div class="form-group">
+        <label>⚙️ Equipment Condition Notes</label>
+        <textarea id="h-equipment" placeholder="e.g. L2 reflow oven zone 3 still unstable. L4 AOI camera cleaned."></textarea>
+      </div>
+
+      <!-- Open Issues to Next Shift -->
+      <div class="form-group">
+        <label>⚠️ Open Issues Carried to Next Shift</label>
+        <textarea id="h-openissues" placeholder="e.g. L3 solder bridge still under investigation. Waiting for new stencil."></textarea>
+      </div>
+
+      <!-- General Notes -->
+      <div class="form-group">
+        <label>📝 Notes for Next Shift</label>
+        <textarea id="h-notes" placeholder="e.g. Monitor L5 paste weight every hour. New board model starts at 11PM."></textarea>
+      </div>
+
+      <button class="submit-btn" id="h-submit-btn" disabled>Submit Handover Report →</button>
+    </div>
+
+    <!-- History -->
+    <div style="margin-top:16px">
+      <div class="summary-title" style="padding:0 4px 8px">📜 Handover History</div>
+      <div class="export-panel" style="margin-bottom:12px">
+        <div class="export-panel-title">⬇️ Export Handover Reports</div>
+        <div class="form-row" style="margin-bottom:8px">
+          <div class="form-group" style="margin-bottom:0"><label>Date From</label><input type="date" id="hexp-from"/></div>
+          <div class="form-group" style="margin-bottom:0"><label>Date To</label><input type="date" id="hexp-to"/></div>
+        </div>
+        <button class="export-btn" id="btn-export-handover" style="margin:0">📋 Export Handover Reports</button>
+      </div>
+      <div id="handover-history"></div>
+    </div>
+  </div>
+
+  <!-- LINE REPORT VIEW -->
+  <div id="linereport-view" style="display:none">
+    <div class="form-card">
+      <div class="form-title">📊 Line Quality & CT Report</div>
+
+      <!-- Editing banner -->
+      <div class="form-editing-banner" id="lr-edit-banner">
+        ✏️ Editing report — changes will be saved over the original.
+        <button class="cancel-edit-btn" id="lr-cancel-edit">Cancel</button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0">
+          <label>Technician Name *</label>
+          <input id="lr-name" type="text" placeholder="Your name"/>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Line Handled</label>
+          <select id="lr-line">
+            <option>L1</option><option>L2</option><option>L3</option>
+            <option>L4</option><option>L5</option><option>L6</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0">
+          <label>Shift</label>
+          <select id="lr-shift">
+            <option>Shift 1 (7AM-3PM)</option>
+            <option>Shift 2 (3PM-11PM)</option>
+            <option>Shift 3 (11PM-7AM)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Production Date</label>
+          <input id="lr-date" type="date"/>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px">Date the board was produced</div>
+        </div>
+      </div>
+
+      <!-- Shared Model -->
+      <div class="form-group" style="margin-top:4px">
+        <label>🏷 Model</label>
+        <input id="lr-model" type="text" placeholder="e.g. PCB-A123"/>
+      </div>
+
+      <!-- Quality Issues -->
+      <div class="form-group">
+        <label>🔍 Quality Issues</label>
+        <div class="form-group">
+          <label style="font-size:10px">Top 3 Quality Issues</label>
+          <textarea id="lr-issues" placeholder="1. Solder bridge&#10;2. Missing component&#10;3. Tombstone"></textarea>
+        </div>
+        <div class="form-group">
+          <label style="font-size:10px">Root Cause</label>
+          <textarea id="lr-rootcause" placeholder="e.g. Stencil aperture blocked, paste dried"></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label style="font-size:10px">Corrective Action</label>
+          <textarea id="lr-action" placeholder="e.g. Cleaned stencil, re-ran SPI check, adjusted squeegee pressure"></textarea>
+        </div>
+      </div>
+
+      <!-- Machine CT -->
+      <div class="form-group" style="margin-top:4px">
+        <label>⏱ Machine Cycle Time (CT) — seconds</label>
+        <div class="ct-table">
+          <div class="ct-header">
+            <div class="ct-cell">Printing</div>
+            <div class="ct-cell">SPI</div>
+            <div class="ct-cell">P&amp;P 1</div>
+            <div class="ct-cell">P&amp;P 2</div>
+            <div class="ct-cell">P&amp;P 3</div>
+          </div>
+          <div class="ct-row-single">
+            <div class="ct-cell"><input class="ct-input" type="number" id="lr-ct-printing" placeholder="—" min="0"/></div>
+            <div class="ct-cell"><input class="ct-input" type="number" id="lr-ct-spi" placeholder="—" min="0"/></div>
+            <div class="ct-cell"><input class="ct-input" type="number" id="lr-ct-pp1" placeholder="—" min="0"/></div>
+            <div class="ct-cell"><input class="ct-input" type="number" id="lr-ct-pp2" placeholder="—" min="0"/></div>
+            <div class="ct-cell"><input class="ct-input" type="number" id="lr-ct-pp3" placeholder="—" min="0"/></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="lr-submit-btn" disabled>Submit Line Report →</button>
+    </div>
+
+    <!-- Line Report History -->
+    <div style="margin-top:16px">
+      <div class="summary-title" style="padding:0 4px 8px">📜 Line Report History</div>
+      <div class="export-panel" style="margin-bottom:12px">
+        <div class="export-panel-title">⬇️ Export Line Reports</div>
+        <div class="form-row" style="margin-bottom:8px">
+          <div class="form-group" style="margin-bottom:0"><label>Date From</label><input type="date" id="lrexp-from"/></div>
+          <div class="form-group" style="margin-bottom:0"><label>Date To</label><input type="date" id="lrexp-to"/></div>
+        </div>
+        <button class="export-btn" id="btn-export-linereport" style="margin:0">⬇️ Export Line Report (Quality + CT)</button>
+      </div>
+      <div id="linereport-history"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Confirm Modal -->
+<div id="confirm-overlay">
+  <div id="confirm-box">
+    <div id="confirm-title">Archive this issue?</div>
+    <div id="confirm-msg">It will be moved to the Archive tab. You can restore or permanently delete it there.</div>
+    <div class="confirm-btns">
+      <button class="confirm-no" id="confirm-no">Cancel</button>
+      <button class="confirm-yes" id="confirm-yes">Archive 📦</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- SheetJS for Excel export -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<script>
+
+// ── Helper: parse date range ───────────────────────────────────
+function getDateRange(fromId, toId){
+  var fromVal = document.getElementById(fromId).value;
+  var toVal   = document.getElementById(toId).value;
+  var from = fromVal ? new Date(fromVal+'T00:00:00') : new Date(0);
+  var to   = toVal   ? new Date(toVal+'T23:59:59')   : new Date(8640000000000000);
+  return {from: from, to: to, label: (fromVal||'all')+' to '+(toVal||'today')};
+}
+
+function fmtDate(ts){
+  if(!ts) return '';
+  return new Date(ts).toLocaleString([],{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+
+function todayStr(){
+  var n=new Date();
+  return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+}
+
+// ── Set default date range (last 7 days → today) ──────────────
+(function setDefaultDates(){
+  var today = todayStr();
+  var d = new Date(); d.setDate(d.getDate()-7);
+  var week = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  ['exp-from','hexp-from','lrexp-from'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=week; });
+  ['exp-to','hexp-to','lrexp-to'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=today; });
+})();
+
+// ── Auto-style columns ─────────────────────────────────────────
+function autoWidth(ws, rows){
+  if(!rows.length) return;
+  var keys = Object.keys(rows[0]);
+  ws['!cols'] = keys.map(function(k){
+    var max = k.length;
+    rows.forEach(function(r){ var v=String(r[k]||''); if(v.length>max) max=v.length; });
+    return {wch: Math.min(max+2, 60)};
+  });
+}
+
+// ── EXPORT ISSUES (with date range) ───────────────────────────
+document.getElementById('btn-export-issues').addEventListener('click', function(){
+  var range = getDateRange('exp-from','exp-to');
+  var allTasks = Object.keys(tasks).map(function(id){ return Object.assign({},tasks[id],{_id:id}); });
+  var filtered = allTasks.filter(function(t){
+    if(t.archived) return false;
+    var d = t.created ? new Date(t.created) : null;
+    if(!d) return true;
+    return d >= range.from && d <= range.to;
+  });
+  if(!filtered.length){ showToast('No issues in this date range'); return; }
+
+  var order = ['Critical','High','Medium','Low'];
+  filtered.sort(function(a,b){ return order.indexOf(a.priority)-order.indexOf(b.priority); });
+
+  var rows = filtered.map(function(t){
+    return {
+      'Date Logged': fmtDate(t.created),
+      'Line':        t.line     || '',
+      'Shift':       t.shift    || '',
+      'Category':    t.category || '',
+      'Priority':    t.priority || '',
+      'Status':      t.status   || '',
+      'Title':       t.title    || '',
+      'Assigned To': t.assignee || '',
+      'Time Found':  t.time     || '',
+      'Notes':       t.note     || ''
+    };
+  });
+
+  var ws = XLSX.utils.json_to_sheet(rows);
+  autoWidth(ws, rows);
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Issues');
+  XLSX.writeFile(wb, 'SMT_Issues_'+todayStr()+'.xlsx');
+  showToast('Exported '+rows.length+' issues ✓');
+});
+
+// ── EXPORT SUMMARY (with date range) ──────────────────────────
+document.getElementById('btn-export-summary').addEventListener('click', function(){
+  var range = getDateRange('exp-from','exp-to');
+  var allTasks = Object.keys(tasks).map(function(id){ return Object.assign({},tasks[id],{_id:id}); });
+  var filtered = allTasks.filter(function(t){
+    if(t.archived) return false;
+    var d = t.created ? new Date(t.created) : null;
+    if(!d) return true;
+    return d >= range.from && d <= range.to;
+  });
+
+  var wb = XLSX.utils.book_new();
+
+  // Sheet 1: By Line
+  var lineRows = LINES.map(function(l){
+    var lt = filtered.filter(function(t){ return t.line===l; });
+    var row = {'Line': l, 'Total Issues': lt.length};
+    ['Critical','High','Medium','Low'].forEach(function(p){
+      row[p] = lt.filter(function(t){ return t.priority===p; }).length;
+    });
+    ['Open','In Progress','Pending Parts','Resolved'].forEach(function(s){
+      row[s] = lt.filter(function(t){ return t.status===s; }).length;
+    });
+    return row;
+  });
+  var ws1 = XLSX.utils.json_to_sheet(lineRows);
+  autoWidth(ws1, lineRows);
+  XLSX.utils.book_append_sheet(wb, ws1, 'By Line');
+
+  // Sheet 2: By Category
+  var catRows = CATS.map(function(c){
+    var ct = filtered.filter(function(t){ return t.category===c; });
+    return {
+      'Category': c, 'Total': ct.length,
+      'Open': ct.filter(function(t){ return t.status==='Open'; }).length,
+      'In Progress': ct.filter(function(t){ return t.status==='In Progress'; }).length,
+      'Resolved': ct.filter(function(t){ return t.status==='Resolved'; }).length
+    };
+  });
+  var ws2 = XLSX.utils.json_to_sheet(catRows);
+  autoWidth(ws2, catRows);
+  XLSX.utils.book_append_sheet(wb, ws2, 'By Category');
+
+  // Sheet 3: By Shift
+  var shiftRows = ['Shift 1 (7AM-3PM)','Shift 2 (3PM-11PM)','Shift 3 (11PM-7AM)'].map(function(s){
+    var st = filtered.filter(function(t){ return t.shift===s; });
+    var row = {'Shift': s, 'Total Issues': st.length};
+    ['Critical','High','Medium','Low'].forEach(function(p){
+      row[p] = st.filter(function(t){ return t.priority===p; }).length;
+    });
+    return row;
+  });
+  var ws3 = XLSX.utils.json_to_sheet(shiftRows);
+  autoWidth(ws3, shiftRows);
+  XLSX.utils.book_append_sheet(wb, ws3, 'By Shift');
+
+  // Sheet 4: By Technician
+  var techMap = {};
+  filtered.forEach(function(t){
+    var a = t.assignee||'Unassigned';
+    if(!techMap[a]) techMap[a]={name:a,total:0,resolved:0,critical:0};
+    techMap[a].total++;
+    if(t.status==='Resolved') techMap[a].resolved++;
+    if(t.priority==='Critical') techMap[a].critical++;
+  });
+  var techRows = Object.values(techMap).sort(function(a,b){ return b.total-a.total; }).map(function(t){
+    return {'Technician': t.name, 'Total Tasks': t.total, 'Resolved': t.resolved, 'Critical Issues': t.critical,
+            'Resolution Rate': t.total>0 ? Math.round(t.resolved/t.total*100)+'%' : '0%'};
+  });
+  var ws4 = XLSX.utils.json_to_sheet(techRows.length ? techRows : [{Note:'No data in range'}]);
+  autoWidth(ws4, techRows.length ? techRows : [{Note:'No data'}]);
+  XLSX.utils.book_append_sheet(wb, ws4, 'By Technician');
+
+  XLSX.writeFile(wb, 'SMT_Summary_'+todayStr()+'.xlsx');
+  showToast('Summary exported — 4 sheets ✓');
+});
+
+// ── EXPORT HANDOVER REPORTS (with date range) ──────────────────
+document.getElementById('btn-export-handover').addEventListener('click', function(){
+  var range = getDateRange('hexp-from','hexp-to');
+  var arr = Object.keys(handovers).map(function(id){ return Object.assign({},handovers[id],{_id:id}); });
+  var filtered = arr.filter(function(r){
+    var d = r.created ? new Date(r.created) : null;
+    if(!d) return true;
+    return d >= range.from && d <= range.to;
+  });
+  if(!filtered.length){ showToast('No handover reports in this date range'); return; }
+  filtered.sort(function(a,b){ return (b.created||0)-(a.created||0); });
+
+  var rows = filtered.map(function(r){
+    var ls = r.lineStatus || {};
+    return {
+      'Submitted At':         fmtDate(r.created),
+      'Production Date':      r.date    || '',
+      'Submitted By':         r.name    || '',
+      'Role':                 r.role    || '',
+      'Shift':                r.shift   || '',
+      'L1 Status':            ls.L1     || '',
+      'L2 Status':            ls.L2     || '',
+      'L3 Status':            ls.L3     || '',
+      'L4 Status':            ls.L4     || '',
+      'L5 Status':            ls.L5     || '',
+      'L6 Status':            ls.L6     || '',
+      'Open Issues Carried':  r.openIssues || '',
+      'Equipment Notes':      r.equipment  || '',
+      'Notes for Next Shift': r.notes      || ''
+    };
+  });
+
+  var ws = XLSX.utils.json_to_sheet(rows);
+  autoWidth(ws, rows);
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Handover Reports');
+  XLSX.writeFile(wb, 'SMT_Handover_'+todayStr()+'.xlsx');
+  showToast('Exported '+filtered.length+' handover reports ✓');
+});
+
+</script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// ── Firebase init ──────────────────────────────────────────────
+firebase.initializeApp({
+  apiKey:            "AIzaSyCULkpiLSXT79nrWWFl5IVJANhUEA8WJWU",
+  authDomain:        "smt-dashboard-cd090.firebaseapp.com",
+  databaseURL:       "https://smt-dashboard-cd090-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "smt-dashboard-cd090",
+  storageBucket:     "smt-dashboard-cd090.firebasestorage.app",
+  messagingSenderId: "468538505165",
+  appId:             "1:468538505165:web:a491ecbcf5fd75b1a1f684"
+});
+var db = firebase.database();
+// ── Constants ──────────────────────────────────────────────────
+var LINES      = ['L1','L2','L3','L4','L5','L6'];
+var PRIORITIES = ['Critical','High','Medium','Low'];
+var STATUSES   = ['Open','In Progress','Pending Parts','Resolved'];
+var CATS       = ['Quality Issue','Equipment Fault','Process Issue','Technician Task','Preventive Maint.'];
+var CAT_ICON   = {'Quality Issue':'🔍','Equipment Fault':'⚙️','Process Issue':'📋','Technician Task':'👷','Preventive Maint.':'🛠️'};
+
+var tasks = {};
+var currentView = 'board';
+var toastTimer;
+
+var tasksRef = db.ref('smt_tasks');
+var handoverRef = db.ref('smt_handovers');
+var lineReportRef = db.ref('smt_linereports');
+var handovers = {};
+var lineReports = {};
+
+// ── Init line status grid ──────────────────────────────────────
+var lineStatus = {L1:'OK',L2:'OK',L3:'OK',L4:'OK',L5:'OK',L6:'OK'};
+(function buildLineGrid(){
+  var grid = document.getElementById('h-line-status');
+  if(!grid) return;
+  grid.innerHTML = LINES.map(function(l){
+    return '<div class="line-status-item" id="ls-'+l+'">'+
+      '<div class="ls-name">'+l+'</div>'+
+      '<div class="ls-btns">'+
+        ['OK','Issue','Down'].map(function(s){
+          return '<button class="ls-btn'+(s==='OK'?' active-OK':'')+'" data-line="'+l+'" data-status="'+s+'">'+s+'</button>';
+        }).join('')+
+      '</div>'+
+    '</div>';
+  }).join('');
+  document.querySelectorAll('.ls-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var line = btn.getAttribute('data-line');
+      var st   = btn.getAttribute('data-status');
+      lineStatus[line] = st;
+      document.querySelectorAll('.ls-btn[data-line="'+line+'"]').forEach(function(b){
+        b.className = 'ls-btn'+(b.getAttribute('data-status')===st?' active-'+st:'');
+      });
+    });
+  });
+})();
+
+// ── Helpers ────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function getShift(){
+  var h=new Date().getHours();
+  if(h>=7 && h<15)  return 'Shift 1 (7AM-3PM)';
+  if(h>=15 && h<23) return 'Shift 2 (3PM-11PM)';
+  return 'Shift 3 (11PM-7AM)';
+}
+function taskArray(){ return Object.keys(tasks).map(function(id){ return Object.assign({},tasks[id],{_id:id}); }).filter(function(t){ return !t.archived; }); }
+function archivedArray(){ return Object.keys(tasks).map(function(id){ return Object.assign({},tasks[id],{_id:id}); }).filter(function(t){ return t.archived; }); }
+function statusKey(s){ return s.replace(/ /g,''); }
+
+function showToast(msg){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){ el.classList.remove('show'); },2000);
+}
+
+// ── Firebase listener ──────────────────────────────────────────
+tasksRef.on('value', function(snap){
+  tasks = snap.val() || {};
+  renderAll();
+  document.getElementById('sync-dot').className='sync-dot live';
+  document.getElementById('sync-label').textContent='Live — all shifts synced';
+  document.getElementById('sync-time').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}, function(err){
+  document.getElementById('sync-dot').className='sync-dot error';
+  document.getElementById('sync-label').textContent='Error: '+err.message;
+  console.error('Firebase error:', err);
+});
+
+// ── Render ─────────────────────────────────────────────────────
+function renderAll(){
+  updateHeader();
+  updateLineGrid();
+  if(currentView==='board') renderBoard();
+  if(currentView==='summary') renderSummary();
+  if(currentView==='archive') renderArchive();
+  if(currentView==='handover') renderHandover();
+  if(currentView==='linereport') renderLineReport();
+}
+
+function updateHeader(){
+  var now=new Date();
+  document.getElementById('date-label').textContent=now.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
+  document.getElementById('shift-label').textContent=getShift()+' · '+now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  var arr=taskArray();
+  var open=arr.filter(function(t){return t.status!=='Resolved';}).length;
+  var done=arr.filter(function(t){return t.status==='Resolved';}).length;
+  var crit=arr.filter(function(t){return t.priority==='Critical'&&t.status!=='Resolved';}).length;
+  document.getElementById('open-count').textContent=open;
+  document.getElementById('done-count').textContent=done;
+  var cb=document.getElementById('critical-banner');
+  if(crit>0){cb.style.display='';document.getElementById('critical-num').textContent=crit;}
+  else cb.style.display='none';
+}
+
+function updateLineGrid(){
+  var arr=taskArray();
+  document.getElementById('line-grid').innerHTML=LINES.map(function(l){
+    var lt=arr.filter(function(t){return t.line===l&&t.status!=='Resolved';});
+    var cls=lt.some(function(t){return t.priority==='Critical';})?'crit':
+            lt.some(function(t){return t.priority==='High';})?'hi':
+            lt.length>0?'med':'clear';
+    return '<div class="line-card '+cls+'" data-line="'+l+'"><div class="lname">'+l+'</div><div class="ldot"></div><div class="lcount">'+(lt.length?lt.length+' open':'Clear')+'</div></div>';
+  }).join('');
+  document.querySelectorAll('.line-card').forEach(function(el){
+    el.addEventListener('click', function(){ filterByLine(el.getAttribute('data-line')); });
+  });
+}
+
+function filterByLine(l){
+  document.getElementById('fl').value=l;
+  switchView('board');
+}
+
+function renderBoard(){
+  var fl=document.getElementById('fl').value;
+  var fp=document.getElementById('fp').value;
+  var fs=document.getElementById('fs').value;
+  var arr=taskArray().filter(function(t){
+    if(fl&&t.line!==fl) return false;
+    if(fp&&t.priority!==fp) return false;
+    if(fs&&t.status!==fs) return false;
+    return true;
+  });
+  arr.sort(function(a,b){ return PRIORITIES.indexOf(a.priority)-PRIORITIES.indexOf(b.priority); });
+  var list=document.getElementById('task-list');
+  if(!arr.length){ list.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div>No issues match the filter</div></div>'; return; }
+  list.innerHTML=arr.map(function(t){
+    return '<div class="task-card" data-priority="'+t.priority+'" data-id="'+t._id+'">'+
+      '<div class="task-header">'+
+        '<div style="flex:1;min-width:0">'+
+          '<div class="task-meta">'+
+            '<span class="badge badge-line">'+t.line+'</span>'+
+            '<span class="badge badge-'+t.priority+'">'+t.priority+'</span>'+
+            '<span class="badge badge-'+statusKey(t.status)+'">'+t.status+'</span>'+
+          '</div>'+
+          '<div class="task-title">'+(CAT_ICON[t.category]||'📌')+' '+esc(t.title)+'</div>'+
+          '<div class="task-info">👷 '+esc(t.assignee||'Unassigned')+' · 🕐 '+esc(t.time||'--:--')+' · '+(t.shift||'').split(' ')[0]+' Shift</div>'+
+        '</div>'+
+        '<button class="task-archive" data-id="'+t._id+'" title="Archive task">📦</button>'+
+      '</div>'+
+      '<div class="task-body" id="body-'+t._id+'">'+
+        '<div class="task-note">📝 '+esc(t.note||'No notes.')+'</div>'+
+        '<div class="status-row">'+
+          STATUSES.map(function(s){ return '<button class="status-btn '+(t.status===s?'s-'+statusKey(s):'')+'" data-id="'+t._id+'" data-status="'+s+'">'+s+'</button>'; }).join('')+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  // Bind events after render
+  document.querySelectorAll('.task-header').forEach(function(el){
+    el.addEventListener('click', function(){
+      var id=el.closest('.task-card').getAttribute('data-id');
+      var body=document.getElementById('body-'+id);
+      if(body) body.classList.toggle('open');
+    });
+  });
+  document.querySelectorAll('.task-archive').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var id = btn.getAttribute('data-id');
+      var task = tasks[id];
+      var title = task ? task.title : 'this issue';
+      showConfirm('Archive "' + title + '"?', function(){
+        tasksRef.child(id).update({archived: true});
+        showToast('Issue archived 📦');
+      });
+    });
+  });
+  document.querySelectorAll('.status-btn').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      tasksRef.child(btn.getAttribute('data-id')).update({status: btn.getAttribute('data-status')});
+      showToast('Status → '+btn.getAttribute('data-status'));
+    });
+  });
+}
+
+function renderSummary(){
+  var arr=taskArray();
+  document.getElementById('sum-lines').innerHTML=LINES.map(function(l){
+    var lt=arr.filter(function(t){return t.line===l;});
+    var open=lt.filter(function(t){return t.status!=='Resolved';}).length;
+    var total=lt.length;
+    var pct=total>0?Math.round((lt.filter(function(t){return t.status==='Resolved';}).length/total)*100):100;
+    return '<div class="line-row"><div class="line-row-top"><span class="line-row-name">'+l+'</span><span class="line-row-count">'+open+' open / '+total+' total</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%"></div></div></div>';
+  }).join('');
+  var catRows=CATS.map(function(c){
+    var cnt=arr.filter(function(t){return t.category===c&&t.status!=='Resolved';}).length;
+    return cnt>0?'<div class="cat-row"><span>'+(CAT_ICON[c]||'')+'  '+c+'</span><span class="cat-count">'+cnt+'</span></div>':'';
+  }).join('');
+  document.getElementById('sum-cats').innerHTML=catRows||'<div style="color:var(--muted);font-size:13px;padding:8px 0">All clear ✅</div>';
+  document.getElementById('sum-priority').innerHTML=PRIORITIES.map(function(p){
+    var cnt=arr.filter(function(t){return t.priority===p&&t.status!=='Resolved';}).length;
+    return '<div class="prio-box c-'+p+'"><div class="pnum">'+cnt+'</div><div class="plbl">'+p+'</div></div>';
+  }).join('');
+  var ua=arr.filter(function(t){return (!t.assignee||t.assignee==='Unassigned')&&t.status!=='Resolved';});
+  document.getElementById('sum-unassigned').innerHTML=ua.length?'<div class="unassigned-card"><div class="unassigned-title">⚠️ Unassigned Issues ('+ua.length+')</div>'+ua.map(function(t){return '<div class="unassigned-item">'+t.line+' · '+esc(t.title)+'</div>';}).join('')+'</div>':'';
+}
+
+// ── View switching ─────────────────────────────────────────────
+function switchView(v){
+  currentView=v;
+  ['board','add','linereport','handover','summary','archive'].forEach(function(name){
+    var btn=document.getElementById('btn-'+name);
+    if(btn) btn.classList.toggle('active', name===v);
+  });
+  document.getElementById('board-view').style.display       = v==='board'?'block':'none';
+  document.getElementById('add-view').className             = v==='add'?'active':'';
+  document.getElementById('linereport-view').style.display  = v==='linereport'?'block':'none';
+  document.getElementById('handover-view').style.display    = v==='handover'?'block':'none';
+  document.getElementById('summary-view').className         = v==='summary'?'active':'';
+  document.getElementById('archive-view').style.display     = v==='archive'?'block':'none';
+  if(v==='board') renderBoard();
+  if(v==='summary'){ renderSummary(); updateHeader(); updateLineGrid(); }
+  if(v==='archive') renderArchive();
+  if(v==='handover') renderHandover();
+  if(v==='linereport') renderLineReport();
+  if(v==='add'){
+    document.getElementById('f-shift').value=getShift();
+    if(!document.getElementById('f-time').value){
+      var now=new Date();
+      document.getElementById('f-time').value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    }
+  }
+}
+
+// ── Nav buttons ────────────────────────────────────────────────
+document.getElementById('btn-board').addEventListener('click',      function(){ switchView('board'); });
+document.getElementById('btn-add').addEventListener('click',        function(){ switchView('add'); });
+document.getElementById('btn-linereport').addEventListener('click', function(){ switchView('linereport'); });
+document.getElementById('btn-handover').addEventListener('click',   function(){ switchView('handover'); });
+document.getElementById('btn-summary').addEventListener('click',    function(){ switchView('summary'); });
+document.getElementById('btn-archive').addEventListener('click',    function(){ switchView('archive'); });
+document.getElementById('btn-clear-filters').addEventListener('click', function(){
+  document.getElementById('fl').value='';
+  document.getElementById('fp').value='';
+  document.getElementById('fs').value='';
+  renderBoard();
+});
+document.getElementById('fl').addEventListener('change', renderBoard);
+document.getElementById('fp').addEventListener('change', renderBoard);
+document.getElementById('fs').addEventListener('change', renderBoard);
+
+// ── Add task ───────────────────────────────────────────────────
+document.getElementById('f-title').addEventListener('input', function(){
+  document.getElementById('submit-btn').disabled = !this.value.trim();
+});
+document.getElementById('submit-btn').addEventListener('click', function(){
+  var title=document.getElementById('f-title').value.trim();
+  if(!title) return;
+  tasksRef.push({
+    line:     document.getElementById('f-line').value,
+    category: document.getElementById('f-cat').value,
+    priority: document.getElementById('f-priority').value,
+    status:   'Open', title: title,
+    assignee: document.getElementById('f-assignee').value.trim()||'Unassigned',
+    time:     document.getElementById('f-time').value,
+    shift:    document.getElementById('f-shift').value,
+    note:     document.getElementById('f-note').value.trim(),
+    created:  Date.now()
+  });
+  document.getElementById('f-title').value='';
+  document.getElementById('f-assignee').value='';
+  document.getElementById('f-note').value='';
+  document.getElementById('submit-btn').disabled=true;
+  switchView('board');
+  showToast('Issue logged ✓');
+});
+
+// ── Confirm modal ──────────────────────────────────────────────
+var confirmCallback = null;
+function showConfirm(msg, onYes){
+  document.getElementById('confirm-title').textContent = msg;
+  document.getElementById('confirm-overlay').classList.add('show');
+  confirmCallback = onYes;
+}
+document.getElementById('confirm-yes').addEventListener('click', function(){
+  document.getElementById('confirm-overlay').classList.remove('show');
+  if(confirmCallback) confirmCallback();
+  confirmCallback = null;
+});
+document.getElementById('confirm-no').addEventListener('click', function(){
+  document.getElementById('confirm-overlay').classList.remove('show');
+  confirmCallback = null;
+});
+
+// ── Render Archive ─────────────────────────────────────────────
+function renderArchive(){
+  var arr = archivedArray();
+  var list = document.getElementById('archive-list');
+  if(!arr.length){
+    list.innerHTML='<div class="archive-empty"><div style="font-size:40px;margin-bottom:8px">📦</div><div>No archived issues</div></div>';
+    return;
+  }
+  list.innerHTML = arr.map(function(t){
+    return '<div class="archive-card">'+
+      '<div class="task-meta">'+
+        '<span class="badge badge-line">'+t.line+'</span>'+
+        '<span class="badge badge-'+t.priority+'">'+t.priority+'</span>'+
+        '<span class="badge badge-'+statusKey(t.status)+'">'+t.status+'</span>'+
+      '</div>'+
+      '<div class="archive-card-title">'+(CAT_ICON[t.category]||'📌')+' '+esc(t.title)+'</div>'+
+      '<div class="archive-card-info">👷 '+esc(t.assignee||'Unassigned')+' · '+esc(t.shift||'')+'</div>'+
+      '<div class="archive-card-actions">'+
+        '<button class="restore-btn" data-id="'+t._id+'">↩ Restore</button>'+
+        '<button class="delete-btn" data-id="'+t._id+'">🗑 Delete</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  document.querySelectorAll('.restore-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      tasksRef.child(btn.getAttribute('data-id')).update({archived: false});
+      showToast('Issue restored ✓');
+    });
+  });
+  document.querySelectorAll('.delete-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.getAttribute('data-id');
+      showConfirm('Permanently delete this issue?', function(){
+        tasksRef.child(id).remove();
+        showToast('Permanently deleted');
+      });
+      document.getElementById('confirm-title').textContent = 'Permanently delete?';
+      document.getElementById('confirm-msg').textContent = 'This cannot be undone.';
+      document.getElementById('confirm-yes').textContent = '🗑 Delete Forever';
+    });
+  });
+}
+
+// ── Handover Firebase listener ─────────────────────────────────
+handoverRef.orderByChild('created').limitToLast(30).on('value', function(snap){
+  handovers = snap.val() || {};
+  if(currentView==='handover') renderHandover();
+});
+
+// ── Handover name validation ───────────────────────────────────
+document.getElementById('h-name').addEventListener('input', function(){
+  document.getElementById('h-submit-btn').disabled = !this.value.trim();
+});
+
+// ── Submit Handover ────────────────────────────────────────────
+document.getElementById('h-submit-btn').addEventListener('click', function(){
+  var name = document.getElementById('h-name').value.trim();
+  if(!name) return;
+
+  var openTasks = taskArray().filter(function(t){ return t.status !== 'Resolved'; });
+  var autoCarried = openTasks.length > 0
+    ? openTasks.map(function(t){ return t.line+': '+t.title+' ['+t.status+']'; }).join('\n') : '';
+  var manualCarried = document.getElementById('h-openissues').value.trim();
+
+  handoverRef.push({
+    name:       name,
+    role:       document.getElementById('h-role').value,
+    shift:      document.getElementById('h-shift').value,
+    date:       document.getElementById('h-date').value,
+    lineStatus: lineStatus,
+    equipment:  document.getElementById('h-equipment').value.trim(),
+    openIssues: manualCarried || autoCarried,
+    notes:      document.getElementById('h-notes').value.trim(),
+    created:    Date.now()
+  });
+
+  document.getElementById('h-name').value='';
+  document.getElementById('h-equipment').value='';
+  document.getElementById('h-openissues').value='';
+  document.getElementById('h-notes').value='';
+  document.getElementById('h-submit-btn').disabled=true;
+  Object.keys(lineStatus).forEach(function(l){ lineStatus[l]='OK'; });
+  document.querySelectorAll('.ls-btn').forEach(function(b){
+    b.className='ls-btn'+(b.getAttribute('data-status')==='OK'?' active-OK':'');
+  });
+  showToast('Handover report submitted ✓');
+  renderHandover();
+});
+
+// ── Render Handover History ────────────────────────────────────
+function renderHandover(){
+  var h = document.getElementById('h-shift');
+  if(h) h.value = getShift();
+  var d = document.getElementById('h-date');
+  if(d && !d.value){ var now=new Date(); d.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0'); }
+
+  var arr = Object.keys(handovers).map(function(id){ return Object.assign({},handovers[id],{_id:id}); });
+  arr.sort(function(a,b){ return (b.created||0)-(a.created||0); });
+
+  var el = document.getElementById('handover-history');
+  if(!arr.length){
+    el.innerHTML='<div class="handover-empty"><div style="font-size:36px;margin-bottom:8px">📋</div><div>No handover reports yet</div></div>';
+    return;
+  }
+  el.innerHTML = arr.map(function(r){
+    var ls = r.lineStatus || {};
+    var lsBadges = LINES.map(function(l){
+      var st = ls[l]||'OK';
+      return '<span class="hl-badge hl-'+st+'">'+l+': '+st+'</span>';
+    }).join('');
+    var dt = r.created ? new Date(r.created).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : r.date||'';
+    return '<div class="handover-card">'+
+      '<div class="handover-card-header">'+
+        '<div>'+
+          '<div class="handover-card-who">'+esc(r.name)+' <span style="color:var(--muted);font-weight:400;font-size:11px">('+esc(r.role)+')</span></div>'+
+          '<div class="handover-card-meta">'+dt+'</div>'+
+        '</div>'+
+        '<div class="handover-shift-badge">'+esc((r.shift||'').replace('Shift ','S'))+'</div>'+
+      '</div>'+
+      '<div class="handover-section"><div class="handover-section-title">🏭 Line Status</div><div class="handover-line-row">'+lsBadges+'</div></div>'+
+      (r.openIssues?'<div class="handover-section"><div class="handover-section-title">⚠️ Open Issues Carried</div><div class="handover-text">'+esc(r.openIssues)+'</div></div>':'')+
+      (r.equipment?'<div class="handover-section"><div class="handover-section-title">⚙️ Equipment Notes</div><div class="handover-text">'+esc(r.equipment)+'</div></div>':'')+
+      (r.notes?'<div class="handover-section"><div class="handover-section-title">📝 Notes for Next Shift</div><div class="handover-text">'+esc(r.notes)+'</div></div>':'')+
+    '</div>';
+  }).join('');
+}
+
+// ── Line Report Firebase listener ──────────────────────────────
+lineReportRef.orderByChild('created').limitToLast(100).on('value', function(snap){
+  lineReports = snap.val() || {};
+  if(currentView==='linereport') renderLineReport();
+});
+
+// ── Line Report name validation ────────────────────────────────
+var editingReportId = null; // null = new report, string = editing existing
+
+document.getElementById('lr-name').addEventListener('input', function(){
+  document.getElementById('lr-submit-btn').disabled = !this.value.trim();
+});
+
+document.getElementById('lr-cancel-edit').addEventListener('click', function(){
+  cancelEdit();
+});
+
+function cancelEdit(){
+  editingReportId = null;
+  document.getElementById('lr-edit-banner').classList.remove('show');
+  document.getElementById('lr-submit-btn').textContent = 'Submit Line Report →';
+  ['lr-name','lr-model','lr-issues','lr-rootcause','lr-action',
+   'lr-ct-printing','lr-ct-spi','lr-ct-pp1','lr-ct-pp2','lr-ct-pp3'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
+  document.getElementById('lr-submit-btn').disabled = true;
+}
+
+function startEdit(r){
+  editingReportId = r._id;
+  // Pre-fill form
+  document.getElementById('lr-name').value      = r.name      || '';
+  document.getElementById('lr-line').value      = r.line      || 'L1';
+  document.getElementById('lr-shift').value     = r.shift     || getShift();
+  document.getElementById('lr-date').value      = r.date      || '';
+  document.getElementById('lr-model').value     = r.model     || '';
+  document.getElementById('lr-issues').value    = r.issues    || '';
+  document.getElementById('lr-rootcause').value = r.rootcause || '';
+  document.getElementById('lr-action').value    = r.action    || '';
+  var ct = r.ct || {};
+  document.getElementById('lr-ct-printing').value = ct.Printing || '';
+  document.getElementById('lr-ct-spi').value       = ct.SPI      || '';
+  document.getElementById('lr-ct-pp1').value       = ct.PP1      || '';
+  document.getElementById('lr-ct-pp2').value       = ct.PP2      || '';
+  document.getElementById('lr-ct-pp3').value       = ct.PP3      || '';
+  // Show banner and update button
+  document.getElementById('lr-edit-banner').classList.add('show');
+  document.getElementById('lr-submit-btn').textContent = 'Save Edit →';
+  document.getElementById('lr-submit-btn').disabled = false;
+  // Scroll to top of form
+  document.getElementById('linereport-view').scrollIntoView({behavior:'smooth'});
+}
+
+// ── Submit / Save Edit ─────────────────────────────────────────
+document.getElementById('lr-submit-btn').addEventListener('click', function(){
+  var name = document.getElementById('lr-name').value.trim();
+  if(!name) return;
+
+  var data = {
+    name:      name,
+    line:      document.getElementById('lr-line').value,
+    shift:     document.getElementById('lr-shift').value,
+    date:      document.getElementById('lr-date').value,
+    model:     document.getElementById('lr-model').value.trim(),
+    issues:    document.getElementById('lr-issues').value.trim(),
+    rootcause: document.getElementById('lr-rootcause').value.trim(),
+    action:    document.getElementById('lr-action').value.trim(),
+    ct: {
+      Printing: document.getElementById('lr-ct-printing').value||'',
+      SPI:      document.getElementById('lr-ct-spi').value||'',
+      PP1:      document.getElementById('lr-ct-pp1').value||'',
+      PP2:      document.getElementById('lr-ct-pp2').value||'',
+      PP3:      document.getElementById('lr-ct-pp3').value||''
+    }
+  };
+
+  if(editingReportId){
+    // Editing existing report
+    var existing = lineReports[editingReportId] || {};
+    var editCount = (existing.editCount || 0) + 1;
+    data.created    = existing.created || Date.now();
+    data.editCount  = editCount;
+    data.lastEdited = Date.now();
+    lineReportRef.child(editingReportId).set(data);
+    showToast('Report updated (edit '+editCount+'/3) ✓');
+    cancelEdit();
+  } else {
+    // New report
+    data.created   = Date.now();
+    data.editCount = 0;
+    lineReportRef.push(data);
+    showToast('Line report submitted ✓');
+    // Reset form
+    ['lr-name','lr-model','lr-issues','lr-rootcause','lr-action',
+     'lr-ct-printing','lr-ct-spi','lr-ct-pp1','lr-ct-pp2','lr-ct-pp3'].forEach(function(id){
+      document.getElementById(id).value='';
+    });
+    document.getElementById('lr-submit-btn').disabled = true;
+  }
+  renderLineReport();
+});
+
+// ── Render Line Report History ─────────────────────────────────
+function renderLineReport(){
+  var lr = document.getElementById('lr-shift');
+  if(lr) lr.value = getShift();
+  var ld = document.getElementById('lr-date');
+  if(ld && !ld.value){ var now=new Date(); ld.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0'); }
+
+  var arr = Object.keys(lineReports).map(function(id){ return Object.assign({},lineReports[id],{_id:id}); });
+  arr.sort(function(a,b){ return (b.created||0)-(a.created||0); });
+
+  var el = document.getElementById('linereport-history');
+  if(!arr.length){
+    el.innerHTML='<div class="handover-empty"><div style="font-size:36px;margin-bottom:8px">📊</div><div>No line reports yet</div></div>';
+    return;
+  }
+  el.innerHTML = arr.map(function(r){
+    var dt = r.created ? new Date(r.created).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : r.date||'';
+    var lastEd = r.lastEdited ? ' · Last edited: '+new Date(r.lastEdited).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    var ct = r.ct || {};
+    var hasQuality = r.model||r.issues||r.rootcause||r.action;
+    var hasCT = ct.Printing||ct.SPI||ct.PP1||ct.PP2||ct.PP3;
+    var editCount = r.editCount || 0;
+    var editsLeft = 3 - editCount;
+    var editSection = editsLeft > 0
+      ? '<button class="edit-btn" data-id="'+r._id+'">✏️ Edit</button>'+
+        '<div class="edit-count">'+editsLeft+' edit'+(editsLeft>1?'s':'')+' remaining</div>'
+      : '<div class="edit-locked">🔒 Locked — no more edits allowed</div>';
+
+    return '<div class="handover-card">'+
+      '<div class="handover-card-header">'+
+        '<div>'+
+          '<div class="handover-card-who">'+esc(r.name)+'</div>'+
+          '<div class="handover-card-meta">Submitted: '+dt+lastEd+(r.date?' · Production: '+esc(r.date):'')+'  · '+esc(r.shift||'')+'</div>'+
+        '</div>'+
+        '<div class="handover-shift-badge" style="background:var(--accent2);color:#000">'+esc(r.line)+'</div>'+
+      '</div>'+
+      (hasQuality?
+        '<div class="handover-section">'+
+          '<div class="handover-section-title">🔍 Quality Issues — Model: '+esc(r.model||'-')+'</div>'+
+          (r.issues?'<div style="margin-bottom:6px"><span style="font-size:10px;color:var(--muted)">TOP 3:</span><div class="handover-text">'+esc(r.issues).replace(/\n/g,'<br>')+'</div></div>':'')+
+          (r.rootcause?'<div style="margin-bottom:6px"><span style="font-size:10px;color:var(--muted)">ROOT CAUSE:</span><div class="handover-text">'+esc(r.rootcause).replace(/\n/g,'<br>')+'</div></div>':'')+
+          (r.action?'<div><span style="font-size:10px;color:var(--muted)">CORRECTIVE ACTION:</span><div class="handover-text">'+esc(r.action).replace(/\n/g,'<br>')+'</div></div>':'')+
+        '</div>':'')+
+      (hasCT?
+        '<div class="handover-section">'+
+          '<div class="handover-section-title">⏱ Machine CT — Model: '+esc(r.model||'-')+'</div>'+
+          '<div style="overflow-x:auto"><table class="ho-table">'+
+            '<tr><th>Printing</th><th>SPI</th><th>P&amp;P 1</th><th>P&amp;P 2</th><th>P&amp;P 3</th></tr>'+
+            '<tr>'+
+              '<td>'+(ct.Printing||'-')+'s</td>'+
+              '<td>'+(ct.SPI||'-')+'s</td>'+
+              '<td>'+(ct.PP1||'-')+'s</td>'+
+              '<td>'+(ct.PP2||'-')+'s</td>'+
+              '<td>'+(ct.PP3||'-')+'s</td>'+
+            '</tr>'+
+          '</table></div>'+
+        '</div>':'')+
+      editSection+
+    '</div>';
+  }).join('');
+
+  // Bind edit buttons
+  document.querySelectorAll('.edit-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.getAttribute('data-id');
+      var r = lineReports[id];
+      if(r) startEdit(Object.assign({},r,{_id:id}));
+    });
+  });
+}
+
+// ── Line Report Export (Quality + CT combined) ────────────────
+document.getElementById('btn-export-linereport').addEventListener('click', function(){
+  var range = getDateRange('lrexp-from','lrexp-to');
+  var arr = Object.keys(lineReports).map(function(id){ return Object.assign({},lineReports[id],{_id:id}); });
+  var filtered = arr.filter(function(r){
+    var d=r.created?new Date(r.created):null; if(!d) return true;
+    return d>=range.from && d<=range.to;
+  });
+  if(!filtered.length){ showToast('No reports in this date range'); return; }
+  filtered.sort(function(a,b){ return (b.created||0)-(a.created||0); });
+
+  var wb = XLSX.utils.book_new();
+
+  // Sheet 1: Quality Issues (with model)
+  var qRows = filtered.map(function(r){
+    return {
+      'Submitted At':      fmtDate(r.created),
+      'Last Edited':       r.lastEdited ? fmtDate(r.lastEdited) : '',
+      'Edit Count':        r.editCount  || 0,
+      'Production Date':   r.date       || '',
+      'Technician':        r.name       || '',
+      'Line':              r.line       || '',
+      'Shift':             r.shift      || '',
+      'Model':             r.model      || '',
+      'Top 3 Issues':      r.issues     || '',
+      'Root Cause':        r.rootcause  || '',
+      'Corrective Action': r.action     || ''
+    };
+  });
+  var ws1 = XLSX.utils.json_to_sheet(qRows);
+  autoWidth(ws1, qRows);
+  XLSX.utils.book_append_sheet(wb, ws1, 'Quality Issues');
+
+  // Sheet 2: Machine CT (with same model)
+  var ctRows = filtered.map(function(r){
+    var ct = r.ct || {};
+    return {
+      'Submitted At':  fmtDate(r.created),
+      'Last Edited':   r.lastEdited ? fmtDate(r.lastEdited) : '',
+      'Edit Count':    r.editCount  || 0,
+      'Production Date': r.date     || '',
+      'Technician':    r.name       || '',
+      'Line':          r.line       || '',
+      'Shift':         r.shift      || '',
+      'Model':         r.model      || '',
+      'Printing (s)':  ct.Printing  || '',
+      'SPI (s)':       ct.SPI       || '',
+      'P&P 1 (s)':     ct.PP1       || '',
+      'P&P 2 (s)':     ct.PP2       || '',
+      'P&P 3 (s)':     ct.PP3       || ''
+    };
+  });
+  var ws2 = XLSX.utils.json_to_sheet(ctRows);
+  autoWidth(ws2, ctRows);
+  XLSX.utils.book_append_sheet(wb, ws2, 'Machine CT');
+
+  XLSX.writeFile(wb, 'SMT_LineReport_'+todayStr()+'.xlsx');
+  showToast('Exported '+filtered.length+' reports — 2 sheets ✓');
+});
+
+// ── Nav: Line Report (registered above) ───────────────────────
+
+// ── Clock ──────────────────────────────────────────────────────
+updateHeader();
+setInterval(updateHeader, 60000);
+
+// ── End ───────────────────────────────────────────────────────
+</script>
+</body>
+</html>
