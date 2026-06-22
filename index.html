@@ -1402,6 +1402,91 @@
             font-size: 13px;
         }
 
+        /* ─── ISSUE CARDS (Line Report) ─── */
+        #app .issue-block {
+            margin-bottom: 10px;
+        }
+        #app .issue-card-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px 8px 0 0;
+            padding: 8px 12px;
+        }
+        #app .issue-rank {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        #app .rank-1 { background: #2a1f00; color: #f5a623; border: 1px solid #5a3a00; }
+        #app .rank-2 { background: #172554; color: #93c5fd; border: 1px solid #1e3a8a; }
+        #app .rank-3 { background: #1e1e2e; color: #6b6b80; border: 1px solid #2a2a3a; }
+        #app .issue-name-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            flex: 1;
+            font-family: var(--font);
+            padding: 0;
+            width: auto;
+        }
+        #app .issue-name-input::placeholder { color: var(--muted); font-weight: 400; }
+        #app .issue-rca-block {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+        }
+        #app .issue-rca-row {
+            display: flex;
+            border-top: 1px solid var(--surface2);
+        }
+        #app .issue-rca-row:first-child { border-top: none; }
+        #app .issue-rca-label {
+            font-size: 10px;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 8px 8px;
+            min-width: 96px;
+            max-width: 96px;
+            background: var(--surface);
+            border-right: 1px solid var(--surface2);
+            display: flex;
+            align-items: flex-start;
+            padding-top: 10px;
+            line-height: 1.3;
+        }
+        #app .issue-rca-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: 12px;
+            font-family: var(--font);
+            padding: 8px 10px;
+            flex: 1;
+            resize: none;
+            line-height: 1.5;
+            height: 52px;
+            width: auto;
+        }
+        #app .issue-rca-input::placeholder { color: var(--border); }
+        #app .issue-rca-input:focus { background: var(--surface2); }
+
         /* ─── RESPONSIVE ─── */
         @media (max-width: 400px) {
             #app .header-title {
@@ -1614,9 +1699,57 @@
                     </div>
                     <div class="form-group">
                         <label>🔍 Quality Issues</label>
-                        <div class="form-group"><label style="font-size:10px">Top 3 Quality Issues</label><textarea id="lr-issues" placeholder="1. Solder bridge&#10;2. Missing component&#10;3. Tombstone"></textarea></div>
-                        <div class="form-group"><label style="font-size:10px">Root Cause</label><textarea id="lr-rootcause" placeholder="e.g. Stencil aperture blocked, paste dried"></textarea></div>
-                        <div class="form-group" style="margin-bottom:0"><label style="font-size:10px">Corrective Action</label><textarea id="lr-action" placeholder="e.g. Cleaned stencil, re-ran SPI check, adjusted squeegee pressure"></textarea></div>
+                        <!-- Issue 1 -->
+                        <div class="issue-block">
+                            <div class="issue-card-row">
+                                <div class="issue-rank rank-1">#1</div>
+                                <input class="issue-name-input" id="lr-issue1" type="text" placeholder="e.g. Solder bridge" />
+                            </div>
+                            <div class="issue-rca-block">
+                                <div class="issue-rca-row">
+                                    <div class="issue-rca-label">Root cause</div>
+                                    <textarea class="issue-rca-input" id="lr-rootcause1" placeholder="e.g. Stencil aperture blocked, paste dried"></textarea>
+                                </div>
+                                <div class="issue-rca-row">
+                                    <div class="issue-rca-label">Corrective action</div>
+                                    <textarea class="issue-rca-input" id="lr-action1" placeholder="e.g. Cleaned stencil, re-ran SPI check"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Issue 2 -->
+                        <div class="issue-block">
+                            <div class="issue-card-row">
+                                <div class="issue-rank rank-2">#2</div>
+                                <input class="issue-name-input" id="lr-issue2" type="text" placeholder="e.g. Missing component" />
+                            </div>
+                            <div class="issue-rca-block">
+                                <div class="issue-rca-row">
+                                    <div class="issue-rca-label">Root cause</div>
+                                    <textarea class="issue-rca-input" id="lr-rootcause2" placeholder="e.g. Feeder jam on slot 14"></textarea>
+                                </div>
+                                <div class="issue-rca-row">
+                                    <div class="issue-rca-label">Corrective action</div>
+                                    <textarea class="issue-rca-input" id="lr-action2" placeholder="e.g. Replaced feeder, ran pick verification"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Issue 3 -->
+                        <div class="issue-block" style="margin-bottom:0">
+                            <div class="issue-card-row">
+                                <div class="issue-rank rank-3">#3</div>
+                                <input class="issue-name-input" id="lr-issue3" type="text" placeholder="e.g. Tombstone" />
+                            </div>
+                            <div class="issue-rca-block">
+                                <div class="issue-rca-row">
+                                    <div class="issue-rca-label">Root cause</div>
+                                    <textarea class="issue-rca-input" id="lr-rootcause3" placeholder="e.g. Uneven paste deposit"></textarea>
+                                </div>
+                                <div class="issue-rca-row">
+                                    <div class="issue-rca-label">Corrective action</div>
+                                    <textarea class="issue-rca-input" id="lr-action3" placeholder="e.g. Adjusted reflow profile, rework completed"></textarea>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group" style="margin-top:4px">
                         <label>⏱ Machine Cycle Time (CT) — seconds</label>
@@ -2518,7 +2651,7 @@
                 var lastEd = r.lastEdited ? ' · Last edited: ' + new Date(r.lastEdited).toLocaleString([],
                     { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
                 var ct = r.ct || {};
-                var hasQuality = r.model || r.issues || r.rootcause || r.action;
+                var hasQuality = r.model || r.issue1 || r.issues || r.rootcause1 || r.rootcause || r.action1 || r.action;
                 var hasCT = ct.Printing || ct.SPI || ct.PP1 || ct.PP2 || ct.PP3;
                 var editCount = r.editCount || 0;
                 var editsLeft = 3 - editCount;
@@ -2547,14 +2680,27 @@
                     '</div>' +
                     (hasQuality ?
                         '<div class="handover-section">' +
-                        '<div class="handover-section-title">🔍 Quality Issues — Model: ' + esc(r.model ||
-                            '-') + '</div>' +
-                        (r.issues ? '<div style="margin-bottom:6px"><span style="font-size:10px;color:var(--muted)">TOP 3:</span><div class="handover-text">' +
-                            esc(r.issues).replace(/\n/g, '<br>') + '</div></div>' : '') +
-                        (r.rootcause ? '<div style="margin-bottom:6px"><span style="font-size:10px;color:var(--muted)">ROOT CAUSE:</span><div class="handover-text">' +
-                            esc(r.rootcause).replace(/\n/g, '<br>') + '</div></div>' : '') +
-                        (r.action ? '<div><span style="font-size:10px;color:var(--muted)">CORRECTIVE ACTION:</span><div class="handover-text">' +
-                            esc(r.action).replace(/\n/g, '<br>') + '</div></div>' : '') +
+                        '<div class="handover-section-title">🔍 Quality Issues — Model: ' + esc(r.model || '-') + '</div>' +
+                        (function() {
+                            var issues = [
+                                { name: r.issue1 || (r.issues ? r.issues.split('\n')[0] : ''), rc: r.rootcause1 || r.rootcause || '', ac: r.action1 || r.action || '' },
+                                { name: r.issue2 || (r.issues ? r.issues.split('\n')[1] : ''), rc: r.rootcause2 || '', ac: r.action2 || '' },
+                                { name: r.issue3 || (r.issues ? r.issues.split('\n')[2] : ''), rc: r.rootcause3 || '', ac: r.action3 || '' }
+                            ];
+                            var ranks = ['rank-1','rank-2','rank-3'];
+                            return issues.filter(function(i) { return i.name || i.rc || i.ac; }).map(function(item, idx) {
+                                return '<div class="issue-block" style="margin-bottom:8px">' +
+                                    '<div class="issue-card-row" style="background:var(--surface2)">' +
+                                    '<div class="issue-rank ' + ranks[idx] + '">#' + (idx + 1) + '</div>' +
+                                    '<div style="font-size:13px;font-weight:600;color:#fff">' + esc(item.name || '—') + '</div>' +
+                                    '</div>' +
+                                    '<div class="issue-rca-block">' +
+                                    (item.rc ? '<div class="issue-rca-row"><div class="issue-rca-label">Root cause</div><div style="font-size:12px;color:var(--text);padding:8px 10px;flex:1;line-height:1.5">' + esc(item.rc) + '</div></div>' : '') +
+                                    (item.ac ? '<div class="issue-rca-row"><div class="issue-rca-label">Corrective action</div><div style="font-size:12px;color:var(--text);padding:8px 10px;flex:1;line-height:1.5">' + esc(item.ac) + '</div></div>' : '') +
+                                    '</div>' +
+                                    '</div>';
+                            }).join('');
+                        })() +
                         '</div>' :
                         '') +
                     (hasCT ?
@@ -2597,9 +2743,15 @@
             document.getElementById('lr-shift').value = r.shift || getShift();
             document.getElementById('lr-date').value = r.date || '';
             document.getElementById('lr-model').value = r.model || '';
-            document.getElementById('lr-issues').value = r.issues || '';
-            document.getElementById('lr-rootcause').value = r.rootcause || '';
-            document.getElementById('lr-action').value = r.action || '';
+            document.getElementById('lr-issue1').value = r.issue1 || r.issues || '';
+            document.getElementById('lr-rootcause1').value = r.rootcause1 || r.rootcause || '';
+            document.getElementById('lr-action1').value = r.action1 || r.action || '';
+            document.getElementById('lr-issue2').value = r.issue2 || '';
+            document.getElementById('lr-rootcause2').value = r.rootcause2 || '';
+            document.getElementById('lr-action2').value = r.action2 || '';
+            document.getElementById('lr-issue3').value = r.issue3 || '';
+            document.getElementById('lr-rootcause3').value = r.rootcause3 || '';
+            document.getElementById('lr-action3').value = r.action3 || '';
             var ct = r.ct || {};
             document.getElementById('lr-ct-printing').value = ct.Printing || '';
             document.getElementById('lr-ct-spi').value = ct.SPI || '';
@@ -2616,7 +2768,9 @@
             editingReportId = null;
             document.getElementById('lr-edit-banner').classList.remove('show');
             document.getElementById('lr-submit-btn').textContent = 'Submit Line Report →';
-            ['lr-model', 'lr-issues', 'lr-rootcause', 'lr-action',
+            ['lr-model', 'lr-issue1', 'lr-rootcause1', 'lr-action1',
+                'lr-issue2', 'lr-rootcause2', 'lr-action2',
+                'lr-issue3', 'lr-rootcause3', 'lr-action3',
                 'lr-ct-printing', 'lr-ct-spi', 'lr-ct-pp1', 'lr-ct-pp2', 'lr-ct-pp3'
             ].forEach(function(id) { document.getElementById(id).value = ''; });
             document.getElementById('lr-submit-btn').disabled = false;
@@ -2722,9 +2876,15 @@
                         shift: document.getElementById('lr-shift').value,
                         date: document.getElementById('lr-date').value,
                         model: document.getElementById('lr-model').value.trim(),
-                        issues: document.getElementById('lr-issues').value.trim(),
-                        rootcause: document.getElementById('lr-rootcause').value.trim(),
-                        action: document.getElementById('lr-action').value.trim(),
+                        issue1: document.getElementById('lr-issue1').value.trim(),
+                        rootcause1: document.getElementById('lr-rootcause1').value.trim(),
+                        action1: document.getElementById('lr-action1').value.trim(),
+                        issue2: document.getElementById('lr-issue2').value.trim(),
+                        rootcause2: document.getElementById('lr-rootcause2').value.trim(),
+                        action2: document.getElementById('lr-action2').value.trim(),
+                        issue3: document.getElementById('lr-issue3').value.trim(),
+                        rootcause3: document.getElementById('lr-rootcause3').value.trim(),
+                        action3: document.getElementById('lr-action3').value.trim(),
                         ct: {
                             Printing: document.getElementById('lr-ct-printing').value || '',
                             SPI: document.getElementById('lr-ct-spi').value || '',
@@ -2749,9 +2909,15 @@
                         shift: document.getElementById('lr-shift').value,
                         date: document.getElementById('lr-date').value,
                         model: document.getElementById('lr-model').value.trim(),
-                        issues: document.getElementById('lr-issues').value.trim(),
-                        rootcause: document.getElementById('lr-rootcause').value.trim(),
-                        action: document.getElementById('lr-action').value.trim(),
+                        issue1: document.getElementById('lr-issue1').value.trim(),
+                        rootcause1: document.getElementById('lr-rootcause1').value.trim(),
+                        action1: document.getElementById('lr-action1').value.trim(),
+                        issue2: document.getElementById('lr-issue2').value.trim(),
+                        rootcause2: document.getElementById('lr-rootcause2').value.trim(),
+                        action2: document.getElementById('lr-action2').value.trim(),
+                        issue3: document.getElementById('lr-issue3').value.trim(),
+                        rootcause3: document.getElementById('lr-rootcause3').value.trim(),
+                        action3: document.getElementById('lr-action3').value.trim(),
                         ct: {
                             Printing: document.getElementById('lr-ct-printing').value || '',
                             SPI: document.getElementById('lr-ct-spi').value || '',
@@ -2764,7 +2930,9 @@
                     };
                     lineReportRef.push(data);
                     showToast('Line report submitted ✓');
-                    ['lr-model', 'lr-issues', 'lr-rootcause', 'lr-action',
+                    ['lr-model', 'lr-issue1', 'lr-rootcause1', 'lr-action1',
+                        'lr-issue2', 'lr-rootcause2', 'lr-action2',
+                        'lr-issue3', 'lr-rootcause3', 'lr-action3',
                         'lr-ct-printing', 'lr-ct-spi', 'lr-ct-pp1', 'lr-ct-pp2', 'lr-ct-pp3'
                     ].forEach(function(id) { document.getElementById(id).value = ''; });
                     renderLineReport();
@@ -3019,9 +3187,15 @@
                     'Line': r.line || '',
                     'Shift': r.shift || '',
                     'Model': r.model || '',
-                    'Top 3 Issues': r.issues || '',
-                    'Root Cause': r.rootcause || '',
-                    'Corrective Action': r.action || ''
+                    'Issue #1': r.issue1 || r.issues || '',
+                    'Root Cause #1': r.rootcause1 || r.rootcause || '',
+                    'Corrective Action #1': r.action1 || r.action || '',
+                    'Issue #2': r.issue2 || '',
+                    'Root Cause #2': r.rootcause2 || '',
+                    'Corrective Action #2': r.action2 || '',
+                    'Issue #3': r.issue3 || '',
+                    'Root Cause #3': r.rootcause3 || '',
+                    'Corrective Action #3': r.action3 || ''
                 };
             });
             var ws1 = XLSX.utils.json_to_sheet(qRows);
