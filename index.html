@@ -384,7 +384,7 @@
         }
 
         /* ─── LINE GRID (inside board-view) ─── */
-        #app #board-view #line-grid {
+        #app #board-view #line-grid {display:grid !important;
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             gap: 4px;
@@ -1542,7 +1542,7 @@
             #app .count-pill .num {
                 font-size: 13px;
             }
-            #app #board-view #line-grid {
+            #app #board-view #line-grid {display:grid !important;
                 gap: 3px;
                 padding: 6px 0 6px 0;
             }
@@ -3431,4 +3431,20 @@
         console.log('✅ SMT Report Center – Model field is now required in Line Reports.');
     </script>
 </body>
-</html>
+</html><!-- Grid fix injected -->
+<style>
+#line-grid {
+  display: grid !important;
+  grid-template-columns: repeat(6, 1fr) !important;
+  gap: 4px !important;
+  padding: 8px 0 !important;
+}
+.line-card {
+  border-radius: 8px !important;
+  padding: 6px 2px !important;
+  border: 2px solid var(--border) !important;
+  background: var(--surface2) !important;
+  text-align: center !important;
+  cursor: pointer !important;
+}
+</style>
