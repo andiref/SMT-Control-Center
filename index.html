@@ -383,7 +383,7 @@
             border-radius: 2px;
         }
 
-        /* ─── LINE GRID (moved inside board-view) ─── */
+        /* ─── LINE GRID (inside board-view) ─── */
         #app #board-view #line-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -1528,6 +1528,11 @@
         #app .issue-name-input.has-error {
             background: #1c0808;
         }
+        /* model input error */
+        #app .lr-model.has-error {
+            background: #1c0808;
+            border-color: var(--critical) !important;
+        }
 
         /* ─── RESPONSIVE ─── */
         @media (max-width: 400px) {
@@ -1647,7 +1652,6 @@
         <div id="main">
             <!-- Board View -->
             <div id="board-view">
-                <!-- LINE GRID moved here -->
                 <div id="line-grid"></div>
                 <div id="filters">
                     <select class="filter-sel" id="fl"><option value="">All Lines</option><option>L1</option><option>L2</option><option>L3</option><option>L4</option><option>L5</option><option>L6</option></select>
@@ -1757,7 +1761,9 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group" style="margin-bottom:0"><label>Production Date</label><input id="lr-date" type="date" /></div>
-                        <div class="form-group" style="margin-bottom:0"><label>🏷 Model</label><input id="lr-model" type="text" placeholder="e.g. PCB-A123" /></div>
+                        <div class="form-group" style="margin-bottom:0"><label>🏷 Model</label>
+                            <input class="lr-model" id="lr-model" type="text" placeholder="e.g. PCB-A123" />
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>🔍 Quality Issues <span style="color:var(--critical);font-size:10px">* all filled issues must be complete</span></label>
@@ -2381,7 +2387,7 @@
                 document.getElementById('critical-num').textContent = crit; } else cb.style.display = 'none';
         }
 
-        // ─── UPDATE LINE GRID (now inside board-view) ─────────────────────
+        // ─── UPDATE LINE GRID ───────────────────────────────────────────────
         function updateLineGrid() {
             var arr = taskArray();
             var grid = document.getElementById('line-grid');
@@ -2863,12 +2869,72 @@
             ].forEach(function(id) { document.getElementById(id).value = ''; });
             document.querySelectorAll('.issue-name-input, .issue-rca-input').forEach(function(el) { el.classList.remove('has-error'); });
             document.querySelectorAll('.issue-card-row').forEach(function(el) { el.classList.remove('has-error'); });
+            document.querySelector('#lr-model')?.classList.remove('has-error');
             var errEl = document.getElementById('lr-issue-error');
             if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
             document.getElementById('lr-submit-btn').disabled = false;
         }
 
         document.getElementById('lr-cancel-edit').addEventListener('click', cancelEditLineReport);
+
+        // ─── LINE REPORT VALIDATION (with Model check) ──────────────────────
+        function validateLineReport() {
+            var errEl = document.getElementById('lr-issue-error');
+            var rows = document.querySelectorAll('.issue-card-row');
+            var errors = [];
+
+            // Clear previous error states
+            document.querySelectorAll('.issue-name-input, .issue-rca-input').forEach(function(el) { el.classList.remove('has-error'); });
+            document.querySelectorAll('.issue-card-row').forEach(function(el) { el.classList.remove('has-error'); });
+            document.querySelector('#lr-model')?.classList.remove('has-error');
+
+            // 1. Model is required
+            var model = document.getElementById('lr-model').value.trim();
+            if (!model) {
+                errors.push('Model is required.');
+                document.querySelector('#lr-model')?.classList.add('has-error');
+            }
+
+            // 2. At least one quality issue must be filled (issue #1 must have a defect name)
+            var issue1 = document.getElementById('lr-issue1').value.trim();
+            if (!issue1) {
+                errors.push('At least one quality issue is required (Issue #1 must have a defect name).');
+                rows[0].classList.add('has-error');
+                document.getElementById('lr-issue1').classList.add('has-error');
+            }
+
+            // 3. Any filled issue must have name + root cause + corrective action
+            var issues = [
+                { name: 'lr-issue1', rc: 'lr-rootcause1', ac: 'lr-action1', row: 0 },
+                { name: 'lr-issue2', rc: 'lr-rootcause2', ac: 'lr-action2', row: 1 },
+                { name: 'lr-issue3', rc: 'lr-rootcause3', ac: 'lr-action3', row: 2 }
+            ];
+            issues.forEach(function(i, idx) {
+                var nameVal = document.getElementById(i.name).value.trim();
+                var rcVal = document.getElementById(i.rc).value.trim();
+                var acVal = document.getElementById(i.ac).value.trim();
+                var anyFilled = nameVal || rcVal || acVal;
+                if (anyFilled) {
+                    var missing = [];
+                    if (!nameVal) { missing.push('defect name'); document.getElementById(i.name).classList.add('has-error'); rows[idx].classList.add('has-error'); }
+                    if (!rcVal)   { missing.push('root cause');   document.getElementById(i.rc).classList.add('has-error'); }
+                    if (!acVal)   { missing.push('corrective action'); document.getElementById(i.ac).classList.add('has-error'); }
+                    if (missing.length) {
+                        errors.push('Issue #' + (idx + 1) + ': missing ' + missing.join(', ') + '.');
+                    }
+                }
+            });
+
+            if (errors.length) {
+                errEl.textContent = '⚠️ ' + errors.join(' ');
+                errEl.style.display = 'block';
+                errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                return false;
+            }
+            errEl.style.display = 'none';
+            errEl.textContent = '';
+            return true;
+        }
 
         // ─── FORM HANDLERS ───────────────────────────────────────────────────
         function initFormHandlers() {
@@ -2955,61 +3021,10 @@
                 }
             });
 
-            // ─── LINE REPORT VALIDATION ──────────────────────────────────────────
-        function validateLineReportIssues() {
-            var issues = [
-                { name: 'lr-issue1', rc: 'lr-rootcause1', ac: 'lr-action1', row: 0 },
-                { name: 'lr-issue2', rc: 'lr-rootcause2', ac: 'lr-action2', row: 1 },
-                { name: 'lr-issue3', rc: 'lr-rootcause3', ac: 'lr-action3', row: 2 }
-            ];
-            var errEl = document.getElementById('lr-issue-error');
-            var rows = document.querySelectorAll('.issue-card-row');
-            var errors = [];
-
-            // Clear previous error states
-            document.querySelectorAll('.issue-name-input, .issue-rca-input').forEach(function(el) { el.classList.remove('has-error'); });
-            rows.forEach(function(el) { el.classList.remove('has-error'); });
-
-            // Must have at least issue #1 filled
-            var hasAny = issues.some(function(i) { return document.getElementById(i.name).value.trim(); });
-            if (!hasAny) {
-                errors.push('At least one quality issue is required.');
-                rows[0].classList.add('has-error');
-                document.getElementById('lr-issue1').classList.add('has-error');
-            }
-
-            // Any filled issue must have name + root cause + corrective action
-            issues.forEach(function(i, idx) {
-                var nameVal = document.getElementById(i.name).value.trim();
-                var rcVal = document.getElementById(i.rc).value.trim();
-                var acVal = document.getElementById(i.ac).value.trim();
-                var anyFilled = nameVal || rcVal || acVal;
-                if (anyFilled) {
-                    var missing = [];
-                    if (!nameVal) { missing.push('defect name'); document.getElementById(i.name).classList.add('has-error'); rows[idx].classList.add('has-error'); }
-                    if (!rcVal)   { missing.push('root cause');   document.getElementById(i.rc).classList.add('has-error'); }
-                    if (!acVal)   { missing.push('corrective action'); document.getElementById(i.ac).classList.add('has-error'); }
-                    if (missing.length) {
-                        errors.push('Issue #' + (idx + 1) + ': missing ' + missing.join(', ') + '.');
-                    }
-                }
-            });
-
-            if (errors.length) {
-                errEl.textContent = '⚠️ ' + errors.join(' ');
-                errEl.style.display = 'block';
-                errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                return false;
-            }
-            errEl.style.display = 'none';
-            errEl.textContent = '';
-            return true;
-        }
-
-        // Line Report submit
+            // Line Report submit (with model validation)
             document.getElementById('lr-submit-btn').addEventListener('click', function() {
                 if (!currentUser) { showToast('Not logged in'); return; }
-                if (!validateLineReportIssues()) return;
+                if (!validateLineReport()) return;
                 if (editingReportId) {
                     var original = lineReports[editingReportId];
                     if (!original) { showToast('Report not found'); return; }
@@ -3413,7 +3428,7 @@
             checkUsersExist();
         }
 
-        console.log('✅ SMT Report Center – Line grid moved to Tasks tab.');
+        console.log('✅ SMT Report Center – Model field is now required in Line Reports.');
     </script>
 </body>
 </html>
