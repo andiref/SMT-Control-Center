@@ -6,7 +6,9 @@
     <meta name="theme-color" content="#0a0a0f" />
     <title>SMT Report Center</title>
     <style>
-        /* ── reset & variables ── */
+        /* ── all styles (same as previous compact version) ── */
+        /* (full style block – identical to the last working version) */
+        /* We include the full styles to ensure no missing CSS. */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -1935,7 +1937,7 @@
         var handovers = {};
         var lineReports = {};
         var lineStatus = { L1: 'OK', L2: 'OK', L3: 'OK', L4: 'OK', L5: 'OK', L6: 'OK' };
-        var currentView = 'linereport';  // <-- default view is now Line Report
+        var currentView = 'linereport';
         var toastTimer;
         var confirmCallback = null;
         var editingReportId = null;
@@ -2159,7 +2161,6 @@
             applyRoleUI();
             initApp();
             renderAll();
-            // Switch to Line Report as default view
             switchView('linereport');
         }
 
@@ -2879,7 +2880,7 @@
 
         document.getElementById('lr-cancel-edit').addEventListener('click', cancelEditLineReport);
 
-        // ─── LINE REPORT VALIDATION (with Model check) ──────────────────────
+        // ─── LINE REPORT VALIDATION ──────────────────────────────────────
         function validateLineReport() {
             var errEl = document.getElementById('lr-issue-error');
             var rows = document.querySelectorAll('.issue-card-row');
@@ -2890,14 +2891,12 @@
             document.querySelectorAll('.issue-card-row').forEach(function(el) { el.classList.remove('has-error'); });
             document.querySelector('#lr-model')?.classList.remove('has-error');
 
-            // 1. Model is required
             var model = document.getElementById('lr-model').value.trim();
             if (!model) {
                 errors.push('Model is required.');
                 document.querySelector('#lr-model')?.classList.add('has-error');
             }
 
-            // 2. At least one quality issue must be filled (issue #1 must have a defect name)
             var issue1 = document.getElementById('lr-issue1').value.trim();
             if (!issue1) {
                 errors.push('At least one quality issue is required (Issue #1 must have a defect name).');
@@ -2905,7 +2904,6 @@
                 document.getElementById('lr-issue1').classList.add('has-error');
             }
 
-            // 3. Any filled issue must have name + root cause + corrective action
             var issues = [
                 { name: 'lr-issue1', rc: 'lr-rootcause1', ac: 'lr-action1', row: 0 },
                 { name: 'lr-issue2', rc: 'lr-rootcause2', ac: 'lr-action2', row: 1 },
@@ -3023,7 +3021,7 @@
                 }
             });
 
-            // Line Report submit (with model validation)
+            // Line Report submit
             document.getElementById('lr-submit-btn').addEventListener('click', function() {
                 if (!currentUser) { showToast('Not logged in'); return; }
                 if (!validateLineReport()) return;
@@ -3199,11 +3197,222 @@
         }
 
         // ─── EXPORT FUNCTIONS ───────────────────────────────────────────────
-        // (all export functions remain unchanged – omitted for brevity)
-        // They are identical to the previous version.
+
+        // Export Issues
+        document.getElementById('btn-export-issues').addEventListener('click', function() {
+            if (!can('export')) { showToast('Permission denied'); return; }
+            var range = getDateRange('exp-from', 'exp-to');
+            var allTasks = Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); });
+            var filtered = allTasks.filter(function(t) {
+                if (t.archived) return false;
+                var d = t.created ? new Date(t.created) : null;
+                if (!d) return true;
+                return d >= range.from && d <= range.to;
+            });
+            if (!filtered.length) { showToast('No issues in this date range'); return; }
+            var order = ['Critical', 'High', 'Medium', 'Low'];
+            filtered.sort(function(a, b) { return order.indexOf(a.priority) - order.indexOf(b.priority); });
+            var rows = filtered.map(function(t) {
+                return {
+                    'Date Logged': fmtDate(t.created),
+                    'Line': t.line || '',
+                    'Shift': t.shift || '',
+                    'Category': t.category || '',
+                    'Priority': t.priority || '',
+                    'Status': t.status || '',
+                    'Title': t.title || '',
+                    'Assigned To': t.assignee || '',
+                    'Time Found': t.time || '',
+                    'Notes': t.note || ''
+                };
+            });
+            var ws = XLSX.utils.json_to_sheet(rows);
+            autoWidth(ws, rows);
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Issues');
+            XLSX.writeFile(wb, 'SMT_Issues_' + todayStr() + '.xlsx');
+            showToast('Exported ' + rows.length + ' issues ✓');
+        });
+
+        // Export Summary
+        document.getElementById('btn-export-summary').addEventListener('click', function() {
+            if (!can('export')) { showToast('Permission denied'); return; }
+            var range = getDateRange('exp-from', 'exp-to');
+            var allTasks = Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); });
+            var filtered = allTasks.filter(function(t) {
+                if (t.archived) return false;
+                var d = t.created ? new Date(t.created) : null;
+                if (!d) return true;
+                return d >= range.from && d <= range.to;
+            });
+            var wb = XLSX.utils.book_new();
+            // By Line
+            var lineRows = LINES.map(function(l) {
+                var lt = filtered.filter(function(t) { return t.line === l; });
+                var row = { 'Line': l, 'Total Issues': lt.length };
+                ['Critical', 'High', 'Medium', 'Low'].forEach(function(p) { row[p] = lt.filter(function(t) {
+                        return t.priority === p; }).length; });
+                ['Open', 'In Progress', 'Pending Parts', 'Resolved'].forEach(function(s) { row[s] = lt
+                        .filter(function(t) { return t.status === s; }).length; });
+                return row;
+            });
+            var ws1 = XLSX.utils.json_to_sheet(lineRows);
+            autoWidth(ws1, lineRows);
+            XLSX.utils.book_append_sheet(wb, ws1, 'By Line');
+            // By Category
+            var catRows = CATS.map(function(c) {
+                var ct = filtered.filter(function(t) { return t.category === c; });
+                return { 'Category': c, 'Total': ct.length, 'Open': ct.filter(function(t) { return t
+                        .status === 'Open'; }).length, 'In Progress': ct.filter(function(t) { return t
+                        .status === 'In Progress'; }).length, 'Resolved': ct.filter(function(t) { return t
+                        .status === 'Resolved'; }).length };
+            });
+            var ws2 = XLSX.utils.json_to_sheet(catRows);
+            autoWidth(ws2, catRows);
+            XLSX.utils.book_append_sheet(wb, ws2, 'By Category');
+            // By Shift
+            var shiftRows = ['Shift 1 (7AM-3PM)', 'Shift 2 (3PM-11PM)', 'Shift 3 (11PM-7AM)'].map(function(s) {
+                var st = filtered.filter(function(t) { return t.shift === s; });
+                var row = { 'Shift': s, 'Total Issues': st.length };
+                ['Critical', 'High', 'Medium', 'Low'].forEach(function(p) { row[p] = st.filter(function(t) {
+                        return t.priority === p; }).length; });
+                return row;
+            });
+            var ws3 = XLSX.utils.json_to_sheet(shiftRows);
+            autoWidth(ws3, shiftRows);
+            XLSX.utils.book_append_sheet(wb, ws3, 'By Shift');
+            // By Technician
+            var techMap = {};
+            filtered.forEach(function(t) {
+                var a = t.assignee || 'Unassigned';
+                if (!techMap[a]) techMap[a] = { name: a, total: 0, resolved: 0, critical: 0 };
+                techMap[a].total++;
+                if (t.status === 'Resolved') techMap[a].resolved++;
+                if (t.priority === 'Critical') techMap[a].critical++;
+            });
+            var techRows = Object.values(techMap).sort(function(a, b) { return b.total - a.total; }).map(function(
+                t) {
+                return { 'Technician': t.name, 'Total Tasks': t.total, 'Resolved': t.resolved,
+                    'Critical Issues': t.critical, 'Resolution Rate': t.total > 0 ? Math.round(t
+                        .resolved / t.total * 100) + '%' : '0%' };
+            });
+            var ws4 = XLSX.utils.json_to_sheet(techRows.length ? techRows : [{ Note: 'No data in range' }]);
+            autoWidth(ws4, techRows.length ? techRows : [{ Note: 'No data' }]);
+            XLSX.utils.book_append_sheet(wb, ws4, 'By Technician');
+            XLSX.writeFile(wb, 'SMT_Summary_' + todayStr() + '.xlsx');
+            showToast('Summary exported — 4 sheets ✓');
+        });
+
+        // ─── Export Handover Reports ──────────────────────────────────────
+        document.getElementById('btn-export-handover').addEventListener('click', function() {
+            if (!can('export')) { showToast('Permission denied'); return; }
+            var range = getDateRange('hexp-from', 'hexp-to');
+            var arr = Object.keys(handovers).map(function(id) { return Object.assign({}, handovers[id], { _id: id }); });
+            var filtered = arr.filter(function(r) {
+                var d = r.created ? new Date(r.created) : null;
+                if (!d) return true;
+                return d >= range.from && d <= range.to;
+            });
+            if (!filtered.length) { showToast('No handover reports in this date range'); return; }
+            filtered.sort(function(a, b) { return (b.created || 0) - (a.created || 0); });
+            var rows = filtered.map(function(r) {
+                var ls = r.lineStatus || {};
+                return {
+                    'Submitted At': fmtDate(r.created),
+                    'Production Date': r.date || '',
+                    'Submitted By': r.name || '',
+                    'Role': r.role || '',
+                    'Shift': r.shift || '',
+                    'L1 Status': ls.L1 || '',
+                    'L2 Status': ls.L2 || '',
+                    'L3 Status': ls.L3 || '',
+                    'L4 Status': ls.L4 || '',
+                    'L5 Status': ls.L5 || '',
+                    'L6 Status': ls.L6 || '',
+                    'Open Issues Carried': r.openIssues || '',
+                    'Equipment Notes': r.equipment || '',
+                    'Notes for Next Shift': r.notes || ''
+                };
+            });
+            var ws = XLSX.utils.json_to_sheet(rows);
+            autoWidth(ws, rows);
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Handover Reports');
+            XLSX.writeFile(wb, 'SMT_Handover_' + todayStr() + '.xlsx');
+            showToast('Exported ' + filtered.length + ' handover reports ✓');
+        });
+
+        // ─── Export Line Reports ──────────────────────────────────────────
+        document.getElementById('btn-export-linereport').addEventListener('click', function() {
+            if (!can('export')) { showToast('Permission denied'); return; }
+            var range = getDateRange('lrexp-from', 'lrexp-to');
+            var arr = Object.keys(lineReports).map(function(id) { return Object.assign({}, lineReports[id], { _id: id }); });
+            var filtered = arr.filter(function(r) {
+                var d = r.created ? new Date(r.created) : null;
+                if (!d) return true;
+                return d >= range.from && d <= range.to;
+            });
+            if (!filtered.length) { showToast('No reports in this date range'); return; }
+            filtered.sort(function(a, b) { return (b.created || 0) - (a.created || 0); });
+            var wb = XLSX.utils.book_new();
+            // Quality
+            var qRows = filtered.map(function(r) {
+                return {
+                    'Submitted At': fmtDate(r.created),
+                    'Last Edited': r.lastEdited ? fmtDate(r.lastEdited) : '',
+                    'Edit Count': r.editCount || 0,
+                    'Production Date': r.date || '',
+                    'Technician': r.name || '',
+                    'Line': r.line || '',
+                    'Shift': r.shift || '',
+                    'Model': r.model || '',
+                    'Issue #1': r.issue1 || r.issues || '',
+                    'Location #1': r.loc1 || '',
+                    'Qty #1': r.qty1 || '',
+                    'Root Cause #1': r.rootcause1 || r.rootcause || '',
+                    'Corrective Action #1': r.action1 || r.action || '',
+                    'Issue #2': r.issue2 || '',
+                    'Location #2': r.loc2 || '',
+                    'Qty #2': r.qty2 || '',
+                    'Root Cause #2': r.rootcause2 || '',
+                    'Corrective Action #2': r.action2 || '',
+                    'Issue #3': r.issue3 || '',
+                    'Location #3': r.loc3 || '',
+                    'Qty #3': r.qty3 || '',
+                    'Root Cause #3': r.rootcause3 || '',
+                    'Corrective Action #3': r.action3 || ''
+                };
+            });
+            var ws1 = XLSX.utils.json_to_sheet(qRows);
+            autoWidth(ws1, qRows);
+            XLSX.utils.book_append_sheet(wb, ws1, 'Quality Issues');
+            // CT
+            var ctRows = filtered.map(function(r) {
+                var ct = r.ct || {};
+                return {
+                    'Submitted At': fmtDate(r.created),
+                    'Last Edited': r.lastEdited ? fmtDate(r.lastEdited) : '',
+                    'Edit Count': r.editCount || 0,
+                    'Production Date': r.date || '',
+                    'Technician': r.name || '',
+                    'Line': r.line || '',
+                    'Shift': r.shift || '',
+                    'Model': r.model || '',
+                    'Printing (s)': ct.Printing || '',
+                    'SPI (s)': ct.SPI || '',
+                    'P&P 1 (s)': ct.PP1 || '',
+                    'P&P 2 (s)': ct.PP2 || '',
+                    'P&P 3 (s)': ct.PP3 || ''
+                };
+            });
+            var ws2 = XLSX.utils.json_to_sheet(ctRows);
+            autoWidth(ws2, ctRows);
+            XLSX.utils.book_append_sheet(wb, ws2, 'Machine CT');
+            XLSX.writeFile(wb, 'SMT_LineReport_' + todayStr() + '.xlsx');
+            showToast('Exported ' + filtered.length + ' reports — 2 sheets ✓');
+        });
 
         // ─── STARTUP ──────────────────────────────────────────────────────────
-
         var stored = loadStoredUser();
         if (stored) {
             usersRef.child(stored.badge).once('value').then(function(snap) {
@@ -3223,7 +3432,7 @@
             checkUsersExist();
         }
 
-        console.log('✅ SMT Report Center – Line Report is now the main page.');
+        console.log('✅ SMT Report Center – All exports (Issues, Summary, Handover, Line Report) are fixed.');
     </script>
 </body>
 </html>
