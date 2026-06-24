@@ -1709,6 +1709,89 @@
             #app #line-grid { display: none !important; }
         }
 
+        /* ─── TASK REMARK PANEL (Pending Parts / Resolved) ─── */
+        #app .task-remark-panel {
+            margin: 0 10px 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            animation: fadeIn .2s ease;
+        }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+        #app .task-remark-row {
+            display: flex;
+            border-top: 1px solid var(--surface2);
+        }
+        #app .task-remark-row:first-child { border-top: none; }
+        #app .task-remark-label {
+            font-size: 10px;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 9px 8px 8px;
+            min-width: 88px;
+            max-width: 88px;
+            background: var(--surface);
+            border-right: 1px solid var(--surface2);
+            line-height: 1.3;
+        }
+        #app .task-remark-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: 12px;
+            font-family: var(--font);
+            padding: 7px 10px;
+            flex: 1;
+            resize: none;
+            line-height: 1.5;
+            height: 46px;
+            width: auto;
+        }
+        #app .task-remark-input::placeholder { color: var(--border); }
+        #app .task-remark-input:focus { background: var(--surface2); }
+        #app .task-remark-save {
+            display: block;
+            width: calc(100% - 20px);
+            margin: 0 10px 10px;
+            padding: 6px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--accent2);
+            font-size: 11px;
+            font-weight: 600;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: all .15s;
+        }
+        #app .task-remark-save:hover { background: var(--accent); color:#fff; border-color:var(--accent); }
+        #app .task-remark-saved {
+            margin: 0 10px 10px;
+            font-size: 11px;
+            color: var(--muted);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #app .task-remark-saved-row {
+            display: flex;
+            border-top: 1px solid var(--surface2);
+            padding: 7px 10px;
+            gap: 8px;
+        }
+        #app .task-remark-saved-row:first-child { border-top: none; }
+        #app .task-remark-saved-lbl {
+            font-size: 10px; color: var(--muted); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.04em;
+            min-width: 72px; flex-shrink: 0; padding-top: 1px;
+        }
+        #app .task-remark-saved-val { font-size: 12px; color: var(--text); line-height: 1.5; }
+
         /* ─── RESPONSIVE ─── */
         @media (max-width: 400px) {
             #app .header-title {
@@ -2050,6 +2133,10 @@
                                 <div class="ct-cell"><input class="ct-input" type="number" id="lr-ct-pp3" placeholder="—" min="0" /></div>
                             </div>
                         </div>
+                    </div>
+                    <div class="form-group" style="margin-top:4px">
+                        <label>📝 Notes</label>
+                        <textarea id="lr-notes" placeholder="e.g. Board rework done on slot A3, awaiting retest. Extra paste inspection every 2 hours."></textarea>
                     </div>
                     <button class="submit-btn" id="lr-submit-btn">Submit Line Report →</button>
                 </div>
@@ -2689,6 +2776,25 @@
                 var assigned = t.assignee || 'Unassigned';
                 var shift = t.shift ? t.shift.split('(')[0].trim() : '';
                 var time = t.time || '--:--';
+                var needsRemark = t.status === 'Pending Parts' || t.status === 'Resolved';
+                var hasSavedRemark = (t.partEta || t.actionNote);
+                var remarkHtml = '';
+                if (needsRemark) {
+                    if (hasSavedRemark) {
+                        remarkHtml = '<div class="task-remark-saved">' +
+                            (t.partEta ? '<div class="task-remark-saved-row"><div class="task-remark-saved-lbl">Part ETA</div><div class="task-remark-saved-val">' + esc(t.partEta) + '</div></div>' : '') +
+                            (t.actionNote ? '<div class="task-remark-saved-row"><div class="task-remark-saved-lbl">Action</div><div class="task-remark-saved-val">' + esc(t.actionNote) + '</div></div>' : '') +
+                            '</div>' +
+                            '<button class="task-remark-save" data-id="' + t._id + '" data-edit="1">✏️ Edit remark</button>';
+                    } else {
+                        remarkHtml = '<div class="task-remark-panel" id="remark-panel-' + t._id + '">' +
+                            (t.status === 'Pending Parts' ?
+                                '<div class="task-remark-row"><div class="task-remark-label">Part ETA</div><textarea class="task-remark-input" id="remark-eta-' + t._id + '" placeholder="e.g. ETA Thursday 10AM, PO#1234"></textarea></div>' : '') +
+                            '<div class="task-remark-row"><div class="task-remark-label">' + (t.status === 'Pending Parts' ? 'Temp action' : 'How solved') + '</div><textarea class="task-remark-input" id="remark-action-' + t._id + '" placeholder="' + (t.status === 'Pending Parts' ? 'e.g. Using spare unit temporarily' : 'e.g. Replaced sensor, ran verification') + '"></textarea></div>' +
+                            '</div>' +
+                            '<button class="task-remark-save" data-id="' + t._id + '">💾 Save remark</button>';
+                    }
+                }
                 return '<div class="task-card" data-priority="' + t.priority + '" data-id="' + t._id + '">' +
                     '<div class="task-header">' +
                     '<div style="flex:1;min-width:0">' +
@@ -2699,21 +2805,19 @@
                     '</div>' +
                     '<div class="task-title">' + (CAT_ICON[t.category] || '📌') + ' ' + esc(t.title) +
                     ' <span class="toggle-arrow open">▶</span></div>' +
-                    '<div class="task-info">👷 ' + esc(assigned) + ' · 🕐 ' + esc(time) + ' · ' + esc(
-                        shift) + ' Shift</div>' +
+                    '<div class="task-info">👷 ' + esc(assigned) + ' · 🕐 ' + esc(time) + ' · ' + esc(shift) + ' Shift</div>' +
                     '</div>' +
-                    '<button class="task-archive' + (isTech ? ' role-restricted' : '') + '" data-id="' + t
-                    ._id + '" title="Archive task">📦</button>' +
+                    '<button class="task-archive' + (isTech ? ' role-restricted' : '') + '" data-id="' + t._id + '" title="Archive task">📦</button>' +
                     '</div>' +
                     '<div class="task-body open" id="body-' + t._id + '">' +
                     '<div class="task-note">📝 ' + esc(t.note || 'No notes.') + '</div>' +
                     '<div class="status-row">' +
                     STATUSES.map(function(s) {
-                        return '<button class="status-btn ' + (t.status === s ? 's-' + statusKey(s) :
-                            '') + '" data-id="' + t._id + '" data-status="' + s + '">' + s +
-                            '</button>';
+                        return '<button class="status-btn ' + (t.status === s ? 's-' + statusKey(s) : '') +
+                            '" data-id="' + t._id + '" data-status="' + s + '">' + s + '</button>';
                     }).join('') +
                     '</div>' +
+                    remarkHtml +
                     '</div>' +
                     '</div>';
             }).join('');
@@ -2748,9 +2852,43 @@
             document.querySelectorAll('.status-btn').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    tasksRef.child(btn.getAttribute('data-id')).update({ status: btn.getAttribute(
-                            'data-status') });
-                    showToast('Status → ' + btn.getAttribute('data-status'));
+                    var id = btn.getAttribute('data-id');
+                    var newStatus = btn.getAttribute('data-status');
+                    tasksRef.child(id).update({ status: newStatus });
+                    showToast('Status → ' + newStatus);
+                });
+            });
+
+            // Remark save button
+            document.querySelectorAll('.task-remark-save').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var id = btn.getAttribute('data-id');
+                    var isEdit = btn.getAttribute('data-edit') === '1';
+                    if (isEdit) {
+                        // Switch saved view back to edit panel
+                        var task = tasks[id];
+                        var panel = btn.closest('.task-body');
+                        var savedEl = btn.previousElementSibling;
+                        var needsEta = task && task.status === 'Pending Parts';
+                        var etaVal = task ? (task.partEta || '') : '';
+                        var actionVal = task ? (task.actionNote || '') : '';
+                        if (savedEl) savedEl.outerHTML =
+                            '<div class="task-remark-panel" id="remark-panel-' + id + '">' +
+                            (needsEta ? '<div class="task-remark-row"><div class="task-remark-label">Part ETA</div><textarea class="task-remark-input" id="remark-eta-' + id + '" placeholder="e.g. ETA Thursday 10AM, PO#1234">' + esc(etaVal) + '</textarea></div>' : '') +
+                            '<div class="task-remark-row"><div class="task-remark-label">' + (needsEta ? 'Temp action' : 'How solved') + '</div><textarea class="task-remark-input" id="remark-action-' + id + '" placeholder="' + (needsEta ? 'e.g. Using spare unit temporarily' : 'e.g. Replaced sensor, ran verification') + '">' + esc(actionVal) + '</textarea></div>' +
+                            '</div>';
+                        btn.removeAttribute('data-edit');
+                        btn.textContent = '💾 Save remark';
+                    } else {
+                        var etaInput = document.getElementById('remark-eta-' + id);
+                        var actionInput = document.getElementById('remark-action-' + id);
+                        var eta = etaInput ? etaInput.value.trim() : '';
+                        var action = actionInput ? actionInput.value.trim() : '';
+                        if (!eta && !action) { showToast('Add at least one remark field'); return; }
+                        tasksRef.child(id).update({ partEta: eta, actionNote: action });
+                        showToast('Remark saved ✓');
+                    }
                 });
             });
             applyRoleUI();
@@ -3061,6 +3199,12 @@
                         '</table></div>' +
                         '</div>' :
                         '') +
+                    (r.notes ?
+                        '<div class="handover-section">' +
+                        '<div class="handover-section-title">📝 Notes</div>' +
+                        '<div class="handover-text" style="white-space:pre-wrap">' + esc(r.notes) + '</div>' +
+                        '</div>' :
+                        '') +
                     editSection +
                     '</div>';
             }).join('');
@@ -3106,6 +3250,7 @@
             document.getElementById('lr-ct-pp1').value = ct.PP1 || '';
             document.getElementById('lr-ct-pp2').value = ct.PP2 || '';
             document.getElementById('lr-ct-pp3').value = ct.PP3 || '';
+            document.getElementById('lr-notes').value = r.notes || '';
             document.getElementById('lr-edit-banner').classList.add('show');
             document.getElementById('lr-submit-btn').textContent = 'Save Edit →';
             document.getElementById('lr-submit-btn').disabled = false;
@@ -3120,7 +3265,8 @@
                 'lr-issue1', 'lr-loc1', 'lr-qty1', 'lr-rootcause1', 'lr-action1',
                 'lr-issue2', 'lr-loc2', 'lr-qty2', 'lr-rootcause2', 'lr-action2',
                 'lr-issue3', 'lr-loc3', 'lr-qty3', 'lr-rootcause3', 'lr-action3',
-                'lr-ct-printing', 'lr-ct-spi', 'lr-ct-pp1', 'lr-ct-pp2', 'lr-ct-pp3'
+                'lr-ct-printing', 'lr-ct-spi', 'lr-ct-pp1', 'lr-ct-pp2', 'lr-ct-pp3',
+                'lr-notes'
             ].forEach(function(id) { document.getElementById(id).value = ''; });
             document.querySelectorAll('.issue-name-input, .issue-rca-input').forEach(function(el) { el.classList.remove('has-error'); });
             document.querySelectorAll('.issue-card-row').forEach(function(el) { el.classList.remove('has-error'); });
@@ -3302,7 +3448,8 @@
                             PP1: document.getElementById('lr-ct-pp1').value || '',
                             PP2: document.getElementById('lr-ct-pp2').value || '',
                             PP3: document.getElementById('lr-ct-pp3').value || ''
-                        }
+                        },
+                        notes: document.getElementById('lr-notes').value.trim()
                     };
                     var editCount = (original.editCount || 0) + 1;
                     data.created = original.created || Date.now();
@@ -3342,6 +3489,7 @@
                             PP2: document.getElementById('lr-ct-pp2').value || '',
                             PP3: document.getElementById('lr-ct-pp3').value || ''
                         },
+                        notes: document.getElementById('lr-notes').value.trim(),
                         created: Date.now(),
                         editCount: 0
                     };
@@ -3351,7 +3499,8 @@
                         'lr-issue1', 'lr-loc1', 'lr-qty1', 'lr-rootcause1', 'lr-action1',
                         'lr-issue2', 'lr-loc2', 'lr-qty2', 'lr-rootcause2', 'lr-action2',
                         'lr-issue3', 'lr-loc3', 'lr-qty3', 'lr-rootcause3', 'lr-action3',
-                        'lr-ct-printing', 'lr-ct-spi', 'lr-ct-pp1', 'lr-ct-pp2', 'lr-ct-pp3'
+                        'lr-ct-printing', 'lr-ct-spi', 'lr-ct-pp1', 'lr-ct-pp2', 'lr-ct-pp3',
+                        'lr-notes'
                     ].forEach(function(id) { document.getElementById(id).value = ''; });
                     var errEl = document.getElementById('lr-issue-error');
                     if (errEl) { errEl.style.display = 'none'; }
@@ -3467,7 +3616,9 @@
                     'Title': t.title || '',
                     'Assigned To': t.assignee || '',
                     'Time Found': t.time || '',
-                    'Notes': t.note || ''
+                    'Notes': t.note || '',
+                    'Part ETA': t.partEta || '',
+                    'Action Taken': t.actionNote || ''
                 };
             });
             var ws = XLSX.utils.json_to_sheet(rows);
@@ -3621,7 +3772,8 @@
                     'Location #3': r.loc3 || '',
                     'Qty #3': r.qty3 || '',
                     'Root Cause #3': r.rootcause3 || '',
-                    'Corrective Action #3': r.action3 || ''
+                    'Corrective Action #3': r.action3 || '',
+                    'Notes': r.notes || ''
                 };
             });
             var ws1 = XLSX.utils.json_to_sheet(qRows);
