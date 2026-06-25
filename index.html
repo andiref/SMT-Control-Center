@@ -2923,7 +2923,7 @@
                 var assigned = t.assignee || 'Unassigned';
                 var shift = t.shift ? t.shift.split('(')[0].trim() : '';
                 var time = t.time || '--:--';
-                var needsRemark = t.status === 'Pending Parts' || t.status === 'Resolved';
+                var needsRemark = t.status === 'In Progress' || t.status === 'Pending Parts' || t.status === 'Resolved';
                 var hasSavedRemark = (t.partEta || t.actionNote);
                 var remarkHtml = '';
                 if (needsRemark) {
@@ -2934,12 +2934,17 @@
                             '</div>' +
                             '<button class="task-remark-save" data-id="' + t._id + '" data-edit="1">✏️ Edit remark</button>';
                     } else {
-                        remarkHtml = '<div class="task-remark-panel" id="remark-panel-' + t._id + '">' +
-                            (t.status === 'Pending Parts' ?
-                                '<div class="task-remark-row"><div class="task-remark-label">Part ETA</div><textarea class="task-remark-input" id="remark-eta-' + t._id + '" placeholder="e.g. ETA Thursday 10AM, PO#1234"></textarea></div>' : '') +
-                            '<div class="task-remark-row"><div class="task-remark-label">' + (t.status === 'Pending Parts' ? 'Temp action' : 'How solved') + '</div><textarea class="task-remark-input" id="remark-action-' + t._id + '" placeholder="' + (t.status === 'Pending Parts' ? 'e.g. Using spare unit temporarily' : 'e.g. Replaced sensor, ran verification') + '"></textarea></div>' +
-                            '</div>' +
-                            '<button class="task-remark-save" data-id="' + t._id + '">💾 Save remark</button>';
+                        var isPending = t.status === 'Pending Parts';
+                            var isResolved = t.status === 'Resolved';
+                            var isInProgress = t.status === 'In Progress';
+                            var actionLabel = isPending ? 'Temp action' : isInProgress ? 'Current action' : 'How solved';
+                            var actionPlaceholder = isPending ? 'e.g. Using spare unit temporarily' : isInProgress ? 'e.g. Adjusting feeder calibration, monitoring' : 'e.g. Replaced sensor, ran verification';
+                            remarkHtml = '<div class="task-remark-panel" id="remark-panel-' + t._id + '">' +
+                                (isPending ?
+                                    '<div class="task-remark-row"><div class="task-remark-label">Part ETA</div><textarea class="task-remark-input" id="remark-eta-' + t._id + '" placeholder="e.g. ETA Thursday 10AM, PO#1234"></textarea></div>' : '') +
+                                '<div class="task-remark-row"><div class="task-remark-label">' + actionLabel + '</div><textarea class="task-remark-input" id="remark-action-' + t._id + '" placeholder="' + actionPlaceholder + '"></textarea></div>' +
+                                '</div>' +
+                                '<button class="task-remark-save" data-id="' + t._id + '">💾 Save remark</button>';
                     }
                 }
                 return '<div class="task-card" data-priority="' + t.priority + '" data-id="' + t._id + '">' +
@@ -3020,11 +3025,16 @@
                         var needsEta = task && task.status === 'Pending Parts';
                         var etaVal = task ? (task.partEta || '') : '';
                         var actionVal = task ? (task.actionNote || '') : '';
-                        if (savedEl) savedEl.outerHTML =
-                            '<div class="task-remark-panel" id="remark-panel-' + id + '">' +
-                            (needsEta ? '<div class="task-remark-row"><div class="task-remark-label">Part ETA</div><textarea class="task-remark-input" id="remark-eta-' + id + '" placeholder="e.g. ETA Thursday 10AM, PO#1234">' + esc(etaVal) + '</textarea></div>' : '') +
-                            '<div class="task-remark-row"><div class="task-remark-label">' + (needsEta ? 'Temp action' : 'How solved') + '</div><textarea class="task-remark-input" id="remark-action-' + id + '" placeholder="' + (needsEta ? 'e.g. Using spare unit temporarily' : 'e.g. Replaced sensor, ran verification') + '">' + esc(actionVal) + '</textarea></div>' +
-                            '</div>';
+                        var isPending2 = task && task.status === 'Pending Parts';
+                            var isResolved2 = task && task.status === 'Resolved';
+                            var isInProgress2 = task && task.status === 'In Progress';
+                            var actionLabel2 = isPending2 ? 'Temp action' : isInProgress2 ? 'Current action' : 'How solved';
+                            var actionPlaceholder2 = isPending2 ? 'e.g. Using spare unit temporarily' : isInProgress2 ? 'e.g. Adjusting feeder calibration, monitoring' : 'e.g. Replaced sensor, ran verification';
+                            if (savedEl) savedEl.outerHTML =
+                                '<div class="task-remark-panel" id="remark-panel-' + id + '">' +
+                                (isPending2 ? '<div class="task-remark-row"><div class="task-remark-label">Part ETA</div><textarea class="task-remark-input" id="remark-eta-' + id + '" placeholder="e.g. ETA Thursday 10AM, PO#1234">' + esc(etaVal) + '</textarea></div>' : '') +
+                                '<div class="task-remark-row"><div class="task-remark-label">' + actionLabel2 + '</div><textarea class="task-remark-input" id="remark-action-' + id + '" placeholder="' + actionPlaceholder2 + '">' + esc(actionVal) + '</textarea></div>' +
+                                '</div>';
                         btn.removeAttribute('data-edit');
                         btn.textContent = '💾 Save remark';
                     } else {
