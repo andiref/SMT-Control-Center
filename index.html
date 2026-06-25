@@ -1792,6 +1792,94 @@
         }
         #app .task-remark-saved-val { font-size: 12px; color: var(--text); line-height: 1.5; }
 
+        /* ─── LIGHT MODE ─── */
+        body.light {
+            --bg: #f0f2f8;
+            --surface: #ffffff;
+            --surface2: #e8eaf2;
+            --border: #ced3e8;
+            --text: #1a1a2e;
+            --muted: #6b6b80;
+            --accent: #3b82f6;
+            --accent2: #2563eb;
+            --critical: #dc2626;
+            --high: #ea6c00;
+            --medium: #b45309;
+            --low: #15803d;
+            --green: #15803d;
+        }
+        body.light #app { background: var(--bg); }
+        body.light #app #sidebar { background: #fff; }
+        body.light #app #desktop-topbar,
+        body.light #sync-bar,
+        body.light #sync-bar-mobile { background: #fff; }
+        body.light .task-card,
+        body.light .form-card,
+        body.light .handover-card,
+        body.light .archive-card { background: #fff; border-color: var(--border); }
+        body.light .task-header { background: #fff; }
+        body.light .issue-card-row { background: var(--surface2) !important; }
+        body.light .issue-rca-block { background: #f8f9ff; }
+        body.light .issue-rca-label { background: var(--surface2); }
+        body.light .nav-btn { background: #fff; border-color: var(--border); color: var(--text); }
+        body.light .nav-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        body.light .task-remark-saved,
+        body.light .task-remark-panel { background: #f8f9ff; border-color: var(--border); }
+        body.light .task-remark-label { background: var(--surface2); }
+        body.light .ct-table { background: #fff; }
+        body.light .ct-table th { background: var(--surface2); }
+        body.light .login-card { background: #fff; border: 1px solid var(--border); }
+        body.light .count-pill { background: var(--surface2); }
+        body.light textarea,
+        body.light input[type="text"],
+        body.light input[type="number"],
+        body.light input[type="date"],
+        body.light select {
+            background: #fff;
+            border-color: var(--border);
+            color: var(--text);
+        }
+        body.light .handover-section { background: var(--surface2); }
+        body.light .confirm-box { background: #fff; border: 1px solid var(--border); }
+
+        /* ─── THEME TOGGLE BUTTON ─── */
+        .theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            font-family: var(--font);
+            transition: all .2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+        .sb-theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: all .15s;
+            margin-bottom: 6px;
+        }
+        .sb-theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
         /* ─── RESPONSIVE ─── */
         @media (max-width: 400px) {
             #app .header-title {
@@ -1876,7 +1964,9 @@
                         <div class="sb-role" id="sidebar-role">Technician</div>
                     </div>
                 </div>
-                <button class="sb-logout" id="sidebar-logout-btn">🚪 Logout</button>
+                <button class="sb-theme-toggle" id="sidebar-logout-btn" style="display:none"><!-- keep id for compat --></button>
+                <button class="sb-theme-toggle" id="theme-toggle-sidebar">🌙 Dark mode</button>
+                <button class="sb-logout" id="sidebar-logout-btn2">🚪 Logout</button>
             </div>
         </div>
 
@@ -1892,6 +1982,7 @@
             </div>
             <div id="line-grid" style="padding:0"></div>
             <div id="desktop-counts">
+                <button class="theme-toggle" id="theme-toggle-desktop" title="Toggle light/dark mode">🌙 Dark</button>
                 <div id="critical-banner-desk" class="critical-banner" style="display:none">🚨 <span id="critical-num-desk">0</span> CRITICAL</div>
                 <div class="count-pill open"><div class="num" id="open-count-desk">0</div><div class="lbl">Open</div></div>
                 <div class="count-pill done"><div class="num" id="done-count-desk">0</div><div class="lbl">Done</div></div>
@@ -1917,6 +2008,7 @@
                     <div class="user-menu">
                         <div class="user-avatar" id="user-avatar">U</div>
                         <span class="user-name-tag" id="user-name-tag"></span>
+                        <button class="theme-toggle" id="theme-toggle-mobile" title="Toggle light/dark mode">🌙 Dark</button>
                         <button class="logout-btn-visible" id="logout-btn-visible">🚪 Logout</button>
                     </div>
                 </div>
@@ -2258,6 +2350,41 @@
             try { localStorage.removeItem('smt_user'); } catch (e) {}
         }
 
+        // ─── THEME ───────────────────────────────────────────────────────────
+        var themeToggleBtns = [];
+        function applyTheme(light) {
+            document.body.classList.toggle('light', !!light);
+            var label = light ? '🌙 Dark mode' : '☀️ Light mode';
+            themeToggleBtns.forEach(function(btn) { if (btn) btn.textContent = label; });
+            try { localStorage.setItem('smt_theme', light ? 'light' : 'dark'); } catch(e) {}
+            // Update meta theme-color for mobile browser chrome
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', light ? '#f0f2f8' : '#0a0a0f');
+        }
+        function toggleTheme() {
+            applyTheme(!document.body.classList.contains('light'));
+        }
+        // Apply saved preference immediately on load
+        (function() {
+            try {
+                var saved = localStorage.getItem('smt_theme');
+                if (saved === 'light') applyTheme(true);
+            } catch(e) {}
+        })();
+        // Wire buttons after DOM ready (initThemeToggles called from initApp)
+        function initThemeToggles() {
+            themeToggleBtns = [
+                document.getElementById('theme-toggle-mobile'),
+                document.getElementById('theme-toggle-desktop'),
+                document.getElementById('theme-toggle-sidebar')
+            ];
+            themeToggleBtns.forEach(function(btn) {
+                if (btn) btn.addEventListener('click', toggleTheme);
+            });
+            // Set initial label
+            applyTheme(document.body.classList.contains('light'));
+        }
+
         // ─── HELPERS ─────────────────────────────────────────────────────────
         function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;'); }
@@ -2492,6 +2619,7 @@
             initListeners();
             initNav();
             initFormHandlers();
+            initThemeToggles();
             updateHeader();
             setInterval(updateHeader, 60000);
         }
@@ -2631,7 +2759,7 @@
                 });
             });
             // Sidebar logout
-            var sLogout = document.getElementById('sidebar-logout-btn');
+            var sLogout = document.getElementById('sidebar-logout-btn2');
             if (sLogout) sLogout.addEventListener('click', logout);
 
             document.getElementById('btn-clear-filters').addEventListener('click', function() {
