@@ -272,6 +272,8 @@
                 display: flex !important;
                 gap: 6px;
                 align-items: center;
+                flex-wrap: nowrap;
+                flex-shrink: 0;
             }
         }
         /* hide sidebar/desktop elements on mobile */
@@ -317,13 +319,13 @@
             padding: 32px 28px;
             max-width: 380px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .7);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
         }
         #login-box .logo {
             font-size: 28px;
             font-weight: 800;
             letter-spacing: -0.5px;
-            color: #fff;
+            color: var(--text);
             text-align: center;
             margin-bottom: 4px;
         }
@@ -504,7 +506,7 @@
             letter-spacing: .4px;
         }
         #app .count-pill.open .num {
-            color: #fff;
+            color: var(--text);
         }
         #app .count-pill.done .num {
             color: var(--green);
@@ -1011,7 +1013,7 @@
         }
         #app .line-row-name {
             font-weight: 700;
-            color: #fff;
+            color: var(--text);
         }
         #app .line-row-count {
             color: var(--muted);
@@ -1039,7 +1041,7 @@
         }
         #app .cat-count {
             font-weight: 800;
-            color: #fff;
+            color: var(--text);
         }
         #app .priority-grid {
             display: grid;
@@ -1240,7 +1242,7 @@
         #app .line-status-item .ls-name {
             font-size: 12px;
             font-weight: 800;
-            color: #fff;
+            color: var(--text);
             margin-bottom: 6px;
         }
         #app .ls-btns {
@@ -1290,7 +1292,7 @@
         #app .handover-card-who {
             font-size: 13px;
             font-weight: 700;
-            color: #fff;
+            color: var(--text);
         }
         #app .handover-card-meta {
             font-size: 11px;
@@ -1517,7 +1519,7 @@
         #app #confirm-title {
             font-size: 14px;
             font-weight: 600;
-            color: #fff;
+            color: var(--text);
             margin-bottom: 6px;
         }
         #app #confirm-msg {
@@ -1559,8 +1561,8 @@
             bottom: 80px;
             left: 50%;
             transform: translateX(-50%) translateY(20px);
-            background: #1e293b;
-            color: #fff;
+            background: var(--surface2);
+            color: var(--text);
             border: 1px solid var(--border);
             border-radius: 20px;
             padding: 8px 20px;
@@ -1846,21 +1848,20 @@
         .theme-toggle {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
             background: var(--surface2);
             border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--muted);
+            border-radius: 50%;
+            font-size: 15px;
             cursor: pointer;
-            font-family: var(--font);
             transition: all .2s;
-            white-space: nowrap;
             flex-shrink: 0;
+            line-height: 1;
+            padding: 0;
         }
-        .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+        .theme-toggle:hover { border-color: var(--accent); transform: scale(1.1); }
         .sb-theme-toggle {
             display: flex;
             align-items: center;
@@ -1982,7 +1983,7 @@
             </div>
             <div id="line-grid" style="padding:0"></div>
             <div id="desktop-counts">
-                <button class="theme-toggle" id="theme-toggle-desktop" title="Toggle light/dark mode">🌙 Dark</button>
+                <button class="theme-toggle" id="theme-toggle-desktop" title="Toggle light/dark mode">🌙</button>
                 <div id="critical-banner-desk" class="critical-banner" style="display:none">🚨 <span id="critical-num-desk">0</span> CRITICAL</div>
                 <div class="count-pill open"><div class="num" id="open-count-desk">0</div><div class="lbl">Open</div></div>
                 <div class="count-pill done"><div class="num" id="done-count-desk">0</div><div class="lbl">Done</div></div>
@@ -2008,7 +2009,7 @@
                     <div class="user-menu">
                         <div class="user-avatar" id="user-avatar">U</div>
                         <span class="user-name-tag" id="user-name-tag"></span>
-                        <button class="theme-toggle" id="theme-toggle-mobile" title="Toggle light/dark mode">🌙 Dark</button>
+                        <button class="theme-toggle" id="theme-toggle-mobile" title="Toggle light/dark mode">🌙</button>
                         <button class="logout-btn-visible" id="logout-btn-visible">🚪 Logout</button>
                     </div>
                 </div>
@@ -2354,10 +2355,15 @@
         var themeToggleBtns = [];
         function applyTheme(light) {
             document.body.classList.toggle('light', !!light);
-            var label = light ? '🌙 Dark mode' : '☀️ Light mode';
-            themeToggleBtns.forEach(function(btn) { if (btn) btn.textContent = label; });
+            var icon  = light ? '☀️' : '🌙';
+            var label = light ? '☀️ Light mode' : '🌙 Dark mode';
+            var mobile  = document.getElementById('theme-toggle-mobile');
+            var desktop = document.getElementById('theme-toggle-desktop');
+            var sidebar = document.getElementById('theme-toggle-sidebar');
+            if (mobile)  mobile.textContent  = icon;
+            if (desktop) desktop.textContent = icon;
+            if (sidebar) sidebar.textContent = label;
             try { localStorage.setItem('smt_theme', light ? 'light' : 'dark'); } catch(e) {}
-            // Update meta theme-color for mobile browser chrome
             var meta = document.querySelector('meta[name="theme-color"]');
             if (meta) meta.setAttribute('content', light ? '#f0f2f8' : '#0a0a0f');
         }
@@ -3300,7 +3306,7 @@
                                 return '<div class="issue-block" style="margin-bottom:8px">' +
                                     '<div class="issue-card-row" style="background:var(--surface2)">' +
                                     '<div class="issue-rank ' + ranks[idx] + '">#' + (idx + 1) + '</div>' +
-                                    '<div style="font-size:13px;font-weight:600;color:#fff;flex:1">' + esc(item.name || '—') + metaBadges + '</div>' +
+                                    '<div style="font-size:13px;font-weight:600;color:var(--text);flex:1">' + esc(item.name || '—') + metaBadges + '</div>' +
                                     '</div>' +
                                     '<div class="issue-rca-block">' +
                                     (item.rc ? '<div class="issue-rca-row"><div class="issue-rca-label">Root cause</div><div style="font-size:12px;color:var(--text);padding:8px 10px;flex:1;line-height:1.5">' + esc(item.rc) + '</div></div>' : '') +
