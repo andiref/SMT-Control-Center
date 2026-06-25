@@ -1367,7 +1367,7 @@
         }
         #app .ct-header {
             display: grid;
-            grid-template-columns: 48px repeat(5, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             background: var(--surface2);
             border-bottom: 1px solid var(--border);
         }
@@ -1830,7 +1830,7 @@
         body.light .task-remark-label { background: var(--surface2); }
         body.light .ct-table { background: #fff; }
         body.light .ct-table th { background: var(--surface2); }
-        body.light .login-card { background: #fff; border: 1px solid var(--border); }
+        body.light #login-box { background: #fff; border: 1px solid var(--border); }
         body.light .count-pill { background: var(--surface2); }
         body.light textarea,
         body.light input[type="text"],
@@ -1842,7 +1842,7 @@
             color: var(--text);
         }
         body.light .handover-section { background: var(--surface2); }
-        body.light .confirm-box { background: #fff; border: 1px solid var(--border); }
+        body.light #app #confirm-box { background: #fff; border: 1px solid var(--border); }
 
         /* ─── THEME TOGGLE BUTTON ─── */
         .theme-toggle {
@@ -1909,6 +1909,7 @@
             }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
     <!-- ─── LOGIN OVERLAY ─── -->
@@ -2097,6 +2098,7 @@
             <div id="handover-view" style="display:none">
                 <div class="form-card" id="handover-form-card">
                     <div class="form-title">🔄 Shift Handover Report</div>
+                    <div class="form-editing-banner" id="ho-edit-banner">✏️ Editing handover report — changes will be saved over the original. <button class="cancel-edit-btn" id="ho-cancel-edit">Cancel</button></div>
                     <div class="form-row">
                         <div class="form-group" style="margin-bottom:0"><label>Role</label><select id="h-role"><option>Shift Leader</option><option>Technician</option></select></div>
                         <div class="form-group" style="margin-bottom:0"><label>Shift Ending</label><select id="h-shift"><option>Shift 1 (7AM-3PM)</option><option>Shift 2 (3PM-11PM)</option><option>Shift 3 (11PM-7AM)</option></select></div>
@@ -2321,6 +2323,7 @@
         var confirmCallback = null;
         var editingReportId = null;
         var editingHandoverId = null;
+        var appInitialized = false;
 
         var LINES = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
         var PRIORITIES = ['Critical', 'High', 'Medium', 'Low'];
@@ -2575,6 +2578,8 @@
             saveUser(currentUser);
             loginOverlay.classList.add('hidden');
             app.classList.add('show');
+            cancelEditHandover(true);
+            cancelEditLineReport();
             userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
             userNameTag.textContent = currentUser.name;
             // Sidebar user info
@@ -2600,6 +2605,8 @@
             loginName.value = '';
             loginBadge.value = '';
             loginError.textContent = '';
+            cancelEditHandover(true);
+            cancelEditLineReport();
             checkUsersExist();
             showToast('Signed out');
         }
@@ -2616,10 +2623,14 @@
             // Sidebar
             var snavUsers = document.getElementById('snav-users');
             if (snavUsers) snavUsers.style.display = isAdmin ? '' : 'none';
+            var sbArchive = document.querySelector('#sidebar-nav .snav-btn[data-target="btn-archive"]');
+            if (sbArchive) sbArchive.style.display = isTech ? 'none' : '';
         }
 
         // ─── INIT APP ──────────────────────────────────────────────────────
         function initApp() {
+            if (appInitialized) return;
+            appInitialized = true;
             buildLineGrid();
             setDefaultDates();
             initListeners();
@@ -2781,6 +2792,8 @@
 
         function switchView(v) {
             if (v === 'users' && !isAdmin()) { showToast('Admin only'); return; }
+            if (v !== 'handover' && editingHandoverId) cancelEditHandover();
+            if (v !== 'linereport' && editingReportId) cancelEditLineReport();
             currentView = v;
             var viewToBtn = { board: 'btn-board', add: 'btn-add', linereport: 'btn-linereport',
                 handover: 'btn-handover', summary: 'btn-summary', archive: 'btn-archive', users: 'btn-users' };
@@ -3091,7 +3104,7 @@
                     '<div class="archive-card-actions">' +
                     '<button class="restore-btn' + (isTech ? ' role-restricted' : '') + '" data-id="' + t._id +
                     '">↩ Restore</button>' +
-                    '<button class="delete-btn' + (!isAdmin ? ' role-restricted' : '') + '" data-id="' + t
+                    '<button class="delete-btn' + (!can('delete') ? ' role-restricted' : '') + '" data-id="' + t
                     ._id + '">🗑 Delete</button>' +
                     '</div>' +
                     '</div>';
@@ -3120,7 +3133,7 @@
         // ─── RENDER HANDOVER ──────────────────────────────────────────────
         function renderHandover() {
             var h = document.getElementById('h-shift');
-            if (h) h.value = getShift();
+            if (h && !editingHandoverId) h.value = getShift();
             var d = document.getElementById('h-date');
             if (d && !d.value) { var now = new Date();
                 d.value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now
@@ -3199,6 +3212,8 @@
                 return;
             }
             editingHandoverId = r._id;
+            var hoBanner = document.getElementById('ho-edit-banner');
+            if (hoBanner) hoBanner.classList.add('show');
             document.getElementById('h-role').value = r.role || 'Shift Leader';
             document.getElementById('h-shift').value = r.shift || getShift();
             document.getElementById('h-date').value = r.date || '';
@@ -3219,12 +3234,14 @@
             document.getElementById('handover-form-card').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function cancelEditHandover() {
+        function cancelEditHandover(silent) {
             editingHandoverId = null;
             document.getElementById('h-submit-btn').textContent = 'Submit Handover Report →';
             document.getElementById('h-equipment').value = '';
             document.getElementById('h-openissues').value = '';
             document.getElementById('h-notes').value = '';
+            var hoBanner = document.getElementById('ho-edit-banner');
+            if (hoBanner) hoBanner.classList.remove('show');
             LINES.forEach(function(l) {
                 lineStatus[l] = 'OK';
                 document.querySelectorAll('.ls-btn[data-line="' + l + '"]').forEach(function(b) {
@@ -3232,13 +3249,13 @@
                 });
             });
             document.getElementById('h-submit-btn').disabled = false;
-            showToast('Edit cancelled');
+            if (!silent) showToast('Edit cancelled');
         }
 
         // ─── RENDER LINE REPORT ────────────────────────────────────────────
         function renderLineReport() {
             var lr = document.getElementById('lr-shift');
-            if (lr) lr.value = getShift();
+            if (lr && !editingReportId) lr.value = getShift();
             var ld = document.getElementById('lr-date');
             if (ld && !ld.value) { var now = new Date();
                 ld.value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now
@@ -3641,6 +3658,9 @@
                     renderLineReport();
                 }
             });
+
+            // Handover edit cancel
+            document.getElementById('ho-cancel-edit').addEventListener('click', cancelEditHandover);
 
             // User management
             document.getElementById('add-user-btn').addEventListener('click', function() {
