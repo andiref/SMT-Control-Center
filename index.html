@@ -54,9 +54,6 @@
                 height: 100vh;
                 overflow: hidden;
             }
-            #login-overlay {
-                /* centres login card nicely on wide screens */
-            }
             #app {
                 flex-direction: row !important;
                 width: 100%;
@@ -936,6 +933,7 @@
             font-weight: 500;
         }
         #app input,
+        #app input[type="date"],
         #app select,
         #app textarea {
             width: 100%;
@@ -952,6 +950,12 @@
         #app select:focus,
         #app textarea:focus {
             border-color: var(--accent);
+        }
+        #app input.has-error,
+        #app select.has-error,
+        #app textarea.has-error {
+            border-color: var(--critical);
+            background: #1c0808;
         }
         #app textarea {
             resize: none;
@@ -1373,7 +1377,7 @@
         }
         #app .ct-row {
             display: grid;
-            grid-template-columns: 48px repeat(5, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             border-bottom: 1px solid var(--border);
         }
         #app .ct-row:last-child {
@@ -1408,6 +1412,10 @@
         }
         #app .ct-input:focus {
             background: var(--surface2);
+        }
+        #app .ct-input.has-error {
+            background: #1c0808;
+            border: 1px solid var(--critical);
         }
         #app .ct-row-single {
             display: grid;
@@ -1830,7 +1838,11 @@
         body.light .task-remark-label { background: var(--surface2); }
         body.light .ct-table { background: #fff; }
         body.light .ct-table th { background: var(--surface2); }
-        body.light #login-box { background: #fff; border: 1px solid var(--border); }
+        body.light #app .ct-input.has-error {
+            background: #fee2e2;
+            border-color: #fca5a5;
+        }
+        body.light .login-card { background: #fff; border: 1px solid var(--border); }
         body.light .count-pill { background: var(--surface2); }
         body.light textarea,
         body.light input[type="text"],
@@ -1841,8 +1853,59 @@
             border-color: var(--border);
             color: var(--text);
         }
+        body.light #app input.has-error,
+        body.light #app select.has-error,
+        body.light #app textarea.has-error {
+            background: #fee2e2;
+            border-color: #fca5a5;
+        }
         body.light .handover-section { background: var(--surface2); }
-        body.light #app #confirm-box { background: #fff; border: 1px solid var(--border); }
+        body.light .confirm-box { background: #fff; border: 1px solid var(--border); }
+
+        /* Light mode badge overrides */
+        body.light #app .badge-Critical  { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        body.light #app .badge-High      { background: #ffedd5; color: #9a3412; border-color: #fdba74; }
+        body.light #app .badge-Medium    { background: #fefce8; color: #854d0e; border-color: #fde047; }
+        body.light #app .badge-Low       { background: #f0fdf4; color: #166534; border-color: #86efac; }
+        body.light #app .badge-Open      { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        body.light #app .badge-InProgress   { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+        body.light #app .badge-PendingParts { background: #f3e8ff; color: #6b21a8; border-color: #d8b4fe; }
+        body.light #app .badge-Resolved  { background: #f0fdf4; color: #166534; border-color: #86efac; }
+        body.light #app .prio-box.c-Critical { background: #fee2e2; border-color: #fca5a5; }
+        body.light #app .prio-box.c-Critical .pnum,
+        body.light #app .prio-box.c-Critical .plbl { color: #991b1b; }
+        body.light #app .prio-box.c-High { background: #ffedd5; border-color: #fdba74; }
+        body.light #app .prio-box.c-High .pnum,
+        body.light #app .prio-box.c-High .plbl { color: #9a3412; }
+        body.light #app .prio-box.c-Medium { background: #fefce8; border-color: #fde047; }
+        body.light #app .prio-box.c-Medium .pnum,
+        body.light #app .prio-box.c-Medium .plbl { color: #854d0e; }
+        body.light #app .prio-box.c-Low { background: #f0fdf4; border-color: #86efac; }
+        body.light #app .prio-box.c-Low .pnum,
+        body.light #app .prio-box.c-Low .plbl { color: #166534; }
+        body.light #app .status-btn.s-Open        { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        body.light #app .status-btn.s-InProgress  { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+        body.light #app .status-btn.s-PendingParts{ background: #f3e8ff; color: #6b21a8; border-color: #d8b4fe; }
+        body.light #app .status-btn.s-Resolved    { background: #f0fdf4; color: #166534; border-color: #86efac; }
+        body.light #app .hl-OK   { background: #f0fdf4; color: #166534; border-color: #86efac; }
+        body.light #app .hl-Issue{ background: #fefce8; color: #854d0e; border-color: #fde047; }
+        body.light #app .hl-Down { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        body.light #app .audit-status  { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+        body.light #app .audit-archive { background: #f3e8ff; color: #6b21a8; border-color: #d8b4fe; }
+        body.light #app .audit-create  { background: #f0fdf4; color: #166534; border-color: #86efac; }
+        body.light #app .audit-restore { background: #fefce8; color: #854d0e; border-color: #fde047; }
+        body.light #app .audit-delete  { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        body.light #app .audit-edit    { background: #ffedd5; color: #9a3412; border-color: #fdba74; }
+        body.light #app .audit-comment { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+        body.light #app .rank-1 { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+        body.light #app .rank-2 { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+        body.light #app .rank-3 { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+        body.light #app .unassigned-card { background: #fff0f0; border-color: #fca5a5; }
+        body.light #app .unassigned-title { color: #991b1b; }
+        body.light #app .unassigned-item  { color: #991b1b; border-color: #fecaca; }
+        body.light #app .dup-warning { background: #fefce8; border-color: #fde047; color: #854d0e; }
+        body.light #app .form-editing-banner { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+        body.light #app .cancel-edit-btn { border-color: #93c5fd; color: #1e40af; }
 
         /* ─── THEME TOGGLE BUTTON ─── */
         .theme-toggle {
@@ -1882,6 +1945,15 @@
         .sb-theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
         /* ─── RESPONSIVE ─── */
+        /* Date input calendar icon for dark mode */
+        #app input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(0.8);
+            cursor: pointer;
+        }
+        body.light #app input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: none;
+        }
+
         @media (max-width: 400px) {
             #app .header-title {
                 font-size: 15px;
@@ -1908,8 +1980,62 @@
                 display: none !important;
             }
         }
+
+        /* ─── SEARCH BAR ─── */
+        #app .search-bar { margin-bottom: 8px; }
+        #app .search-input {
+            width: 100%; background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+            border-radius: 10px; padding: 9px 12px 9px 36px; font-size: 13px; font-family: var(--font); outline: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none'%3E%3Ccircle cx='6' cy='6' r='5' stroke='%236b6b80' stroke-width='1.5'/%3E%3Cpath d='M10 10l3 3' stroke='%236b6b80' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: 12px center;
+        }
+        #app .search-input:focus { border-color: var(--accent); }
+        #app .search-input::placeholder { color: var(--muted); }
+
+        /* ─── ISSUE AGE / SLA ─── */
+        #app .task-age { font-size: 10px; color: var(--muted); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+        #app .task-age .age-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+        #app .task-age.escalated { color: var(--critical); font-weight: 700; }
+        #app .task-age.escalated .age-dot { background: var(--critical); animation: pulse 1.2s infinite; }
+        #app .task-age.warning { color: var(--high); }
+        #app .task-age.warning .age-dot { background: var(--high); }
+
+        /* ─── COMMENTS ─── */
+        #app .comment-list { margin: 8px 0; border-top: 1px solid var(--border); padding-top: 8px; }
+        #app .comment-item { padding: 6px 0; border-bottom: 1px solid var(--surface2); font-size: 11px; line-height: 1.4; }
+        #app .comment-item:last-child { border-bottom: none; }
+        #app .comment-meta { font-size: 10px; color: var(--muted); margin-bottom: 2px; display: flex; gap: 6px; align-items: center; }
+        #app .comment-meta .c-author { font-weight: 700; color: var(--accent2); }
+        #app .comment-text { color: var(--text); word-break: break-word; }
+        #app .comment-input-wrap { display: flex; gap: 6px; margin-top: 8px; }
+        #app .comment-input { flex: 1; background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 12px; font-family: var(--font); outline: none; resize: none; height: 36px; line-height: 1.4; }
+        #app .comment-input:focus { border-color: var(--accent); }
+        #app .comment-submit { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 0 12px; font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+        #app .comment-submit:hover { background: #2563eb; }
+        #app .comment-empty { font-size: 11px; color: var(--muted); padding: 4px 0; font-style: italic; }
+
+        /* ─── AUDIT LOG ─── */
+        #app .audit-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 360px; }
+        #app .audit-table th { background: var(--surface2); color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .4px; padding: 8px 10px; text-align: left; border: 1px solid var(--border); position: sticky; top: 0; }
+        #app .audit-table td { padding: 8px 10px; border: 1px solid var(--border); color: var(--text); vertical-align: top; line-height: 1.4; }
+        #app .audit-table tr:nth-child(even) td { background: var(--surface2); }
+        #app .audit-badge { font-size: 9px; font-weight: 700; border-radius: 4px; padding: 1px 6px; display: inline-block; }
+        #app .audit-status { background: #172554; color: #93c5fd; border: 1px solid #1e3a8a; }
+        #app .audit-archive { background: #2e1065; color: #d8b4fe; border: 1px solid #4c1d95; }
+        #app .audit-create { background: #052e16; color: #86efac; border: 1px solid #14532d; }
+        #app .audit-restore { background: #422006; color: #fde047; border: 1px solid #713f12; }
+        #app .audit-delete { background: #450a0a; color: #fca5a5; border: 1px solid #7f1d1d; }
+        #app .audit-edit { background: #431407; color: #fdba74; border: 1px solid #7c2d12; }
+        #app .audit-comment { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+
+        /* ─── DUPLICATE WARNING ─── */
+        #app .dup-warning { background: #422006; border: 1px solid #713f12; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 12px; color: #fde047; display: none; }
+        #app .dup-warning.show { display: block; }
+        #app .dup-warning strong { color: #fff; }
+
+        /* ─── PRINT STYLES ─── */
+        
     </style>
-<base target="_blank">
 </head>
 <body>
     <!-- ─── LOGIN OVERLAY ─── -->
@@ -1956,6 +2082,7 @@
                 <button class="snav-btn" data-target="btn-handover">🔄 Handover</button>
                 <button class="snav-btn" data-target="btn-summary">📈 Summary</button>
                 <button class="snav-btn" data-target="btn-archive">📦 Archive</button>
+                <button class="snav-btn" id="snav-audit" data-target="btn-audit" style="display:none">📜 Audit</button>
                 <button class="snav-btn role-restricted" id="snav-users" data-target="btn-users" style="display:none">👥 Users</button>
             </div>
             <div id="sidebar-bottom">
@@ -1966,7 +2093,6 @@
                         <div class="sb-role" id="sidebar-role">Technician</div>
                     </div>
                 </div>
-                <button class="sb-theme-toggle" id="sidebar-logout-btn" style="display:none"><!-- keep id for compat --></button>
                 <button class="sb-theme-toggle" id="theme-toggle-sidebar">🌙 Dark mode</button>
                 <button class="sb-logout" id="sidebar-logout-btn2">🚪 Logout</button>
             </div>
@@ -2026,12 +2152,16 @@
             <button class="nav-btn" id="btn-handover">🔄 Handover</button>
             <button class="nav-btn" id="btn-summary">📈 Summary</button>
             <button class="nav-btn" id="btn-archive">📦 Archive</button>
+            <button class="nav-btn" id="btn-audit" style="display:none">📜 Audit</button>
             <button class="nav-btn" id="btn-users" style="display:none">👥 Users</button>
         </div>
 
         <div id="main">
             <!-- Board View -->
             <div id="board-view">
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="search-input" placeholder="Search issues by title, line, or category..." />
+                </div>
                 <div id="filters">
                     <select class="filter-sel" id="fl"><option value="">All Lines</option><option>L1</option><option>L2</option><option>L3</option><option>L4</option><option>L5</option><option>L6</option></select>
                     <select class="filter-sel" id="fp"><option value="">All Priority</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
@@ -2045,6 +2175,9 @@
             <div id="add-view">
                 <div class="form-card">
                     <div class="form-title">🆕 Log New Issue / Task</div>
+                    <div class="dup-warning" id="dup-warning">
+                        ⚠️ <strong>Possible duplicate detected:</strong> An open issue on <span id="dup-line"></span> with a similar title already exists. <button class="clear-btn" id="dup-dismiss" style="color:#fde047;text-decoration:underline;margin-left:8px">Dismiss</button>
+                    </div>
                     <div class="form-row">
                         <div class="form-group" style="margin-bottom:0"><label>Line</label><select id="f-line"><option>L1</option><option>L2</option><option>L3</option><option>L4</option><option>L5</option><option>L6</option></select></div>
                         <div class="form-group" style="margin-bottom:0"><label>Shift</label><select id="f-shift"><option>Shift 1 (7AM-3PM)</option><option>Shift 2 (3PM-11PM)</option><option>Shift 3 (11PM-7AM)</option></select></div>
@@ -2055,7 +2188,10 @@
                     </div>
                     <div class="form-group" style="margin-top:10px"><label>Issue Title *</label><input id="f-title" type="text" placeholder="e.g. Solder bridge on L3 AOI station" /></div>
                     <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0"><label>Date Found</label><input id="f-date" type="date" /></div>
                         <div class="form-group" style="margin-bottom:0"><label>Time Found</label><input id="f-time" type="time" /></div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group" style="margin-bottom:0"><label>Status</label>
                             <select id="f-status">
                                 <option>Open</option>
@@ -2064,6 +2200,7 @@
                                 <option>Resolved</option>
                             </select>
                         </div>
+                        <div></div>
                     </div>
                     <div class="form-group" style="margin-top:10px"><label>Notes / Initial Findings</label><textarea id="f-note" placeholder="What was observed? Next step?"></textarea></div>
                     <button class="submit-btn" id="submit-btn" disabled>Log Issue →</button>
@@ -2077,7 +2214,7 @@
                 <div class="summary-card"><div class="summary-title">Open by Priority</div><div class="priority-grid" id="sum-priority"></div></div>
                 <div id="sum-unassigned"></div>
                 <div class="export-panel">
-                    <div class="export-panel-title">⬇️ Export to Excel</div>
+                    <div class="export-panel-title">📋 Export Issues</div>
                     <div class="form-row" style="margin-bottom:8px">
                         <div class="form-group" style="margin-bottom:0"><label>Date From</label><input type="date" id="exp-from" /></div>
                         <div class="form-group" style="margin-bottom:0"><label>Date To</label><input type="date" id="exp-to" /></div>
@@ -2086,6 +2223,22 @@
                         <button class="export-btn" id="btn-export-issues" style="margin:0">📋 Export Issues</button>
                         <button class="export-btn" id="btn-export-summary" style="margin:0;background:#7c3aed">📊 Export Summary</button>
                     </div>
+                </div>
+                <div class="export-panel">
+                    <div class="export-panel-title">🔄 Export Handover Reports</div>
+                    <div class="form-row" style="margin-bottom:8px">
+                        <div class="form-group" style="margin-bottom:0"><label>Date From</label><input type="date" id="hexp-from" /></div>
+                        <div class="form-group" style="margin-bottom:0"><label>Date To</label><input type="date" id="hexp-to" /></div>
+                    </div>
+                    <button class="export-btn" id="btn-export-handover" style="margin:0">📋 Export Handover Reports</button>
+                </div>
+                <div class="export-panel">
+                    <div class="export-panel-title">📊 Export Line Reports</div>
+                    <div class="form-row" style="margin-bottom:8px">
+                        <div class="form-group" style="margin-bottom:0"><label>Date From</label><input type="date" id="lrexp-from" /></div>
+                        <div class="form-group" style="margin-bottom:0"><label>Date To</label><input type="date" id="lrexp-to" /></div>
+                    </div>
+                    <button class="export-btn" id="btn-export-linereport" style="margin:0">⬇️ Export Line Report (Quality + CT)</button>
                 </div>
             </div>
 
@@ -2098,7 +2251,6 @@
             <div id="handover-view" style="display:none">
                 <div class="form-card" id="handover-form-card">
                     <div class="form-title">🔄 Shift Handover Report</div>
-                    <div class="form-editing-banner" id="ho-edit-banner">✏️ Editing handover report — changes will be saved over the original. <button class="cancel-edit-btn" id="ho-cancel-edit">Cancel</button></div>
                     <div class="form-row">
                         <div class="form-group" style="margin-bottom:0"><label>Role</label><select id="h-role"><option>Shift Leader</option><option>Technician</option></select></div>
                         <div class="form-group" style="margin-bottom:0"><label>Shift Ending</label><select id="h-shift"><option>Shift 1 (7AM-3PM)</option><option>Shift 2 (3PM-11PM)</option><option>Shift 3 (11PM-7AM)</option></select></div>
@@ -2117,15 +2269,11 @@
                     <button class="submit-btn" id="h-submit-btn">Submit Handover Report →</button>
                 </div>
                 <div style="margin-top:16px">
-                    <div class="summary-title" style="padding:0 4px 8px">📜 Handover History</div>
-                    <div class="export-panel" style="margin-bottom:12px">
-                        <div class="export-panel-title">⬇️ Export Handover Reports</div>
-                        <div class="form-row" style="margin-bottom:8px">
-                            <div class="form-group" style="margin-bottom:0"><label>Date From</label><input type="date" id="hexp-from" /></div>
-                            <div class="form-group" style="margin-bottom:0"><label>Date To</label><input type="date" id="hexp-to" /></div>
-                        </div>
-                        <button class="export-btn" id="btn-export-handover" style="margin:0">📋 Export Handover Reports</button>
-                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px 8px">
+                    <div class="summary-title" style="padding:0">📜 Handover History</div>
+                    
+                </div>
+                    <!-- Export moved to Summary tab -->
                     <div id="handover-history"></div>
                 </div>
             </div>
@@ -2141,10 +2289,10 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group" style="margin-bottom:0"><label>Production Date</label><input id="lr-date" type="date" /></div>
-                        <div class="form-group" style="margin-bottom:0"><label>🏷 Model</label><input id="lr-model" type="text" placeholder="e.g. PCB-A123" /></div>
+                        <div class="form-group" style="margin-bottom:0"><label>🏷 Model <span style="color:var(--critical);font-size:10px">* required</span></label><input id="lr-model" type="text" placeholder="e.g. PCB-A123" /></div>
                     </div>
                     <div class="form-group">
-                        <label>🔍 Quality Issues <span style="color:var(--critical);font-size:10px">* all filled issues must be complete</span></label>
+                        <label>🔍 Quality Issues <span style="color:var(--critical);font-size:10px">* defect name, location, quantity, root cause & corrective action required</span></label>
                         <!-- Issue 1 -->
                         <div class="issue-block">
                             <div class="issue-card-row">
@@ -2211,7 +2359,7 @@
                         <div id="lr-issue-error" style="display:none;color:var(--critical);font-size:11px;margin-top:8px;padding:6px 10px;background:#450a0a;border-radius:6px;border:1px solid #7f1d1d"></div>
                     </div>
                     <div class="form-group" style="margin-top:4px">
-                        <label>⏱ Machine Cycle Time (CT) — seconds</label>
+                        <label>⏱ Machine Cycle Time (CT) — seconds <span style="color:var(--critical);font-size:10px">* all fields required</span></label>
                         <div class="ct-table">
                             <div class="ct-header">
                                 <div class="ct-cell">Printing</div>
@@ -2236,16 +2384,50 @@
                     <button class="submit-btn" id="lr-submit-btn">Submit Line Report →</button>
                 </div>
                 <div style="margin-top:16px">
-                    <div class="summary-title" style="padding:0 4px 8px">📜 Line Report History</div>
-                    <div class="export-panel" style="margin-bottom:12px">
-                        <div class="export-panel-title">⬇️ Export Line Reports</div>
-                        <div class="form-row" style="margin-bottom:8px">
-                            <div class="form-group" style="margin-bottom:0"><label>Date From</label><input type="date" id="lrexp-from" /></div>
-                            <div class="form-group" style="margin-bottom:0"><label>Date To</label><input type="date" id="lrexp-to" /></div>
-                        </div>
-                        <button class="export-btn" id="btn-export-linereport" style="margin:0">⬇️ Export Line Report (Quality + CT)</button>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px 8px">
+                        <div class="summary-title" style="padding:0">📜 Line Report History</div>
                     </div>
+                    <div class="search-bar" style="margin-bottom:10px">
+                        <input type="text" class="search-input" id="lr-search-input" placeholder="Search by model, line, technician, or defect..." />
+                    </div>
+                    <!-- Export moved to Summary tab -->
                     <div id="linereport-history"></div>
+                </div>
+            </div>
+
+            <!-- Audit Log View -->
+            <div id="audit-view" style="display:none">
+                <div class="form-card" style="margin-bottom:12px">
+                    <div class="form-title">📜 Audit Log / Activity History</div>
+                    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+                        <select class="filter-sel" id="audit-filter-type" style="flex:1;min-width:120px">
+                            <option value="">All Actions</option>
+                            <option value="create">Create</option>
+                            <option value="status">Status Change</option>
+                            <option value="archive">Archive</option>
+                            <option value="restore">Restore</option>
+                            <option value="delete">Delete</option>
+                            <option value="edit">Edit</option>
+                            <option value="comment">Comment</option>
+                        </select>
+                        <select class="filter-sel" id="audit-filter-user" style="flex:1;min-width:120px">
+                            <option value="">All Users</option>
+                        </select>
+                        <input type="date" class="filter-sel" id="audit-filter-date" style="flex:1;min-width:120px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:10px" />
+                        <button class="clear-btn" id="audit-clear-filters">Clear</button>
+                    </div>
+                    <div style="overflow-x:auto">
+                        <table class="audit-table" id="audit-table">
+                            <thead>
+                                <tr><th>Time</th><th>User</th><th>Action</th><th>Details</th></tr>
+                            </thead>
+                            <tbody id="audit-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="audit-empty" class="empty" style="display:none;padding:24px 16px">
+                        <div class="empty-icon">📋</div>
+                        <div>No audit records match the filter</div>
+                    </div>
                 </div>
             </div>
 
@@ -2296,6 +2478,8 @@
     </script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js">
     </script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js">
+    </script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js">
     </script>
 
@@ -2311,6 +2495,15 @@
             appId: "1:468538505165:web:a491ecbcf5fd75b1a1f684"
         });
         var db = firebase.database();
+        // Enable offline persistence for stability
+        try {
+            firebase.database().enablePersistence({ synchronizeTabs: true })
+                .catch(function(err) {
+                    console.log('Persistence failed:', err.code);
+                });
+        } catch(e) {
+            console.log('Persistence not supported');
+        }
 
         // ─── STATE ──────────────────────────────────────────────────────────
         var currentUser = null;
@@ -2323,7 +2516,6 @@
         var confirmCallback = null;
         var editingReportId = null;
         var editingHandoverId = null;
-        var appInitialized = false;
 
         var LINES = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
         var PRIORITIES = ['Critical', 'High', 'Medium', 'Low'];
@@ -2333,15 +2525,24 @@
             'Preventive Maint.': '🛠️' };
 
         // ─── SESSION PERSISTENCE ──────────────────────────────────────────
+        var SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours (one shift)
+
         function saveUser(user) {
-            try { localStorage.setItem('smt_user', JSON.stringify(user)); } catch (e) {}
+            try { localStorage.setItem('smt_user', JSON.stringify({ _ts: Date.now(), data: user })); } catch (e) {}
         }
 
         function loadStoredUser() {
             try {
-                var data = localStorage.getItem('smt_user');
-                if (data) {
-                    var user = JSON.parse(data);
+                var raw = localStorage.getItem('smt_user');
+                if (raw) {
+                    var stored = JSON.parse(raw);
+                    // Support legacy format (no _ts wrapper)
+                    var user = stored._ts ? stored.data : stored;
+                    var ts   = stored._ts || 0;
+                    if (stored._ts && Date.now() - ts > SESSION_TTL_MS) {
+                        localStorage.removeItem('smt_user');
+                        return null;
+                    }
                     if (user && user.name && user.badge) {
                         return user;
                     }
@@ -2397,6 +2598,11 @@
         // ─── HELPERS ─────────────────────────────────────────────────────────
         function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;'); }
+
+        function sanitizeFirebase(str) {
+            return String(str).replace(/\./g, '_').replace(/\$/g, '_').replace(/#/g, '_')
+                .replace(/\[/g, '_').replace(/\]/g, '_').replace(/\//g, '_');
+        }
 
         function getShift() {
             var h = new Date().getHours();
@@ -2456,6 +2662,48 @@
             });
         }
 
+        // ─── NEW FEATURE HELPERS ───────────────────────────────────────────
+        function logAudit(action, details, taskId) {
+            if (!currentUser) return;
+            auditRef.push({ user: currentUser.name, badge: currentUser.badge, action: action, details: details || '', taskId: taskId || '', timestamp: Date.now() });
+        }
+        function getAgeClass(created) {
+            if (!created) return '';
+            var hours = (Date.now() - created) / 3600000;
+            if (hours >= 2) return 'escalated';
+            if (hours >= 1) return 'warning';
+            return '';
+        }
+        function fmtAge(created) {
+            if (!created) return '';
+            var age = Date.now() - created;
+            var h = Math.floor(age / 3600000);
+            var m = Math.floor((age % 3600000) / 60000);
+            return h > 0 ? h + 'h ' + m + 'm' : m + 'm';
+        }
+        function checkDuplicateIssue(line, title) {
+            var arr = taskArray();
+            var keywords = title.toLowerCase().split(/\s+/).filter(function(w) { return w.length > 3; });
+            return arr.find(function(t) {
+                if (t.line !== line || t.status === 'Resolved') return false;
+                return keywords.some(function(k) { return (t.title || '').toLowerCase().indexOf(k) !== -1; });
+            });
+        }
+        function checkDuplicateLineReport(line, date, shift, model) {
+            var arr = Object.keys(lineReports).map(function(id) { return Object.assign({}, lineReports[id], { _id: id }); });
+            return arr.find(function(r) { return r.line === line && r.date === date && r.shift === shift && r.model === model; });
+        }
+        function autoArchiveResolved() {
+            var cutoff = Date.now() - (7 * 24 * 3600000);
+            Object.keys(tasks).forEach(function(id) {
+                var t = tasks[id];
+                if (t && t.status === 'Resolved' && !t.archived && t.created && t.created < cutoff) {
+                    tasksRef.child(id).update({ archived: true });
+                    logAudit('archive', 'Auto-archived after 7 days: ' + (t.title || ''), id);
+                }
+            });
+        }
+
         // ─── ROLE HELPERS ────────────────────────────────────────────────────
         function getRole() { return currentUser ? currentUser.role : 'technician'; }
 
@@ -2467,7 +2715,7 @@
                 return true;
             }
             if (r === 'technician') {
-                if (perm === 'export' || perm === 'archive' || perm === 'restore' || perm === 'delete' || perm ===
+                if (perm === 'archive' || perm === 'restore' || perm === 'delete' || perm ===
                     'permadelete' || perm === 'manageUsers') return false;
                 return true;
             }
@@ -2499,6 +2747,7 @@
         var tasksRef = db.ref('smt_tasks');
         var handoverRef = db.ref('smt_handovers');
         var lineReportRef = db.ref('smt_linereports');
+        var auditRef = db.ref('smt_audit');
 
         // ─── CHECK USERS ──────────────────────────────────────────────────
         function checkUsersExist() {
@@ -2575,11 +2824,13 @@
         });
 
         function loginSuccess() {
+            // Sign into Firebase anonymously so Security Rules recognise this session
+            firebase.auth().signInAnonymously().catch(function(err) {
+                console.warn('Firebase anon auth failed:', err.message);
+            });
             saveUser(currentUser);
             loginOverlay.classList.add('hidden');
             app.classList.add('show');
-            cancelEditHandover(true);
-            cancelEditLineReport();
             userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
             userNameTag.textContent = currentUser.name;
             // Sidebar user info
@@ -2590,7 +2841,7 @@
             var sRole = document.getElementById('sidebar-role');
             if (sRole) sRole.textContent = (currentUser.role || 'technician').charAt(0).toUpperCase() + (currentUser.role || 'technician').slice(1);
             applyRoleUI();
-            initApp();
+            if (!appInitialized) { initApp(); appInitialized = true; }
             renderAll();
         }
 
@@ -2598,6 +2849,7 @@
         function logout() {
             currentUser = null;
             clearStoredUser();
+            firebase.auth().signOut().catch(function() {});
             loginOverlay.classList.remove('hidden');
             app.classList.remove('show');
             loginBtn.disabled = false;
@@ -2605,8 +2857,6 @@
             loginName.value = '';
             loginBadge.value = '';
             loginError.textContent = '';
-            cancelEditHandover(true);
-            cancelEditLineReport();
             checkUsersExist();
             showToast('Signed out');
         }
@@ -2620,17 +2870,17 @@
             var isTech = r === 'technician';
             document.getElementById('btn-users').style.display = isAdmin ? '' : 'none';
             document.getElementById('btn-archive').style.display = isTech ? 'none' : '';
+            document.getElementById('btn-audit').style.display = isAdmin ? '' : 'none';
             // Sidebar
             var snavUsers = document.getElementById('snav-users');
             if (snavUsers) snavUsers.style.display = isAdmin ? '' : 'none';
-            var sbArchive = document.querySelector('#sidebar-nav .snav-btn[data-target="btn-archive"]');
-            if (sbArchive) sbArchive.style.display = isTech ? 'none' : '';
+            var snavAudit = document.getElementById('snav-audit');
+            if (snavAudit) snavAudit.style.display = isAdmin ? '' : 'none';
         }
 
         // ─── INIT APP ──────────────────────────────────────────────────────
+        var appInitialized = false;
         function initApp() {
-            if (appInitialized) return;
-            appInitialized = true;
             buildLineGrid();
             setDefaultDates();
             initListeners();
@@ -2689,6 +2939,26 @@
         }
 
         // ─── FIREBASE LISTENERS ─────────────────────────────────────────────
+        // Connection state monitoring
+        db.ref('.info/connected').on('value', function(snap) {
+            var connected = snap.val();
+            var dd = document.getElementById('sync-dot');
+            var dl = document.getElementById('sync-label');
+            var md = document.getElementById('sync-dot-mobile');
+            var ml = document.getElementById('sync-label-mobile');
+            if (connected) {
+                if (dd) dd.className = 'sync-dot live';
+                if (dl) dl.textContent = 'Live — all shifts synced';
+                if (md) md.className = 'sync-dot live';
+                if (ml) ml.textContent = 'Live — all shifts synced';
+            } else {
+                if (dd) dd.className = 'sync-dot error';
+                if (dl) dl.textContent = 'Offline — changes queued locally';
+                if (md) md.className = 'sync-dot error';
+                if (ml) ml.textContent = 'Offline — changes queued locally';
+            }
+        });
+
         function setSyncStatus(live, msg, time) {
             // Desktop sync bar
             var dd = document.getElementById('sync-dot');
@@ -2707,7 +2977,21 @@
         }
 
         function initListeners() {
-            tasksRef.on('value', function(snap) {
+            function safeOnValue(ref, callback, errorCallback, retries) {
+                retries = retries || 3;
+                ref.on('value', callback, function(err) {
+                    console.error('Firebase error:', err);
+                    if (retries > 0) {
+                        setTimeout(function() {
+                            safeOnValue(ref, callback, errorCallback, retries - 1);
+                        }, 2000);
+                    } else if (errorCallback) {
+                        errorCallback(err);
+                    }
+                });
+            }
+
+            safeOnValue(tasksRef, function(snap) {
                 tasks = snap.val() || {};
                 renderAll();
                 setSyncStatus(true, 'Live — all shifts synced',
@@ -2716,18 +3000,24 @@
                 setSyncStatus(false, 'Error: ' + err.message, null);
             });
 
-            handoverRef.orderByChild('created').limitToLast(30).on('value', function(snap) {
+            safeOnValue(handoverRef.orderByChild('created').limitToLast(30), function(snap) {
                 handovers = snap.val() || {};
                 if (currentView === 'handover') renderHandover();
             });
 
-            lineReportRef.orderByChild('created').limitToLast(100).on('value', function(snap) {
+            safeOnValue(lineReportRef.orderByChild('created').limitToLast(100), function(snap) {
                 lineReports = snap.val() || {};
                 if (currentView === 'linereport') renderLineReport();
             });
 
-            usersRef.on('value', function() {
+            safeOnValue(usersRef, function() {
                 if (currentView === 'users' && isAdmin()) renderUserList();
+                if (currentView === 'audit') populateAuditUserFilter();
+            });
+
+            safeOnValue(auditRef.orderByChild('timestamp').limitToLast(500), function(snap) {
+                auditLog = snap.val() || {};
+                if (currentView === 'audit') renderAudit();
             });
         }
 
@@ -2758,6 +3048,7 @@
                 'btn-handover': 'handover',
                 'btn-summary': 'summary',
                 'btn-archive': 'archive',
+                'btn-audit': 'audit',
                 'btn-users': 'users'
             };
             Object.keys(navBtns).forEach(function(id) {
@@ -2767,6 +3058,10 @@
                     switchView(navBtns[id]);
                 });
             });
+            var auditBtn = document.getElementById('btn-audit');
+            if (auditBtn) auditBtn.addEventListener('click', function() { switchView('audit'); });
+            var snavAudit = document.getElementById('snav-audit');
+            if (snavAudit) snavAudit.addEventListener('click', function() { switchView('audit'); });
 
             // Sidebar nav buttons
             document.querySelectorAll('#sidebar-nav .snav-btn').forEach(function(btn) {
@@ -2788,16 +3083,22 @@
             document.getElementById('fl').addEventListener('change', renderBoard);
             document.getElementById('fp').addEventListener('change', renderBoard);
             document.getElementById('fs').addEventListener('change', renderBoard);
+            var searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.addEventListener('input', renderBoard);
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    document.getElementById('confirm-overlay').classList.remove('show');
+                }
+            });
         }
 
         function switchView(v) {
             if (v === 'users' && !isAdmin()) { showToast('Admin only'); return; }
-            if (v !== 'handover' && editingHandoverId) cancelEditHandover();
-            if (v !== 'linereport' && editingReportId) cancelEditLineReport();
+            if (v === 'audit' && !isAdmin()) { showToast('Admin only'); return; }
             currentView = v;
             var viewToBtn = { board: 'btn-board', add: 'btn-add', linereport: 'btn-linereport',
-                handover: 'btn-handover', summary: 'btn-summary', archive: 'btn-archive', users: 'btn-users' };
-            ['board', 'add', 'linereport', 'handover', 'summary', 'archive', 'users'].forEach(function(name) {
+                handover: 'btn-handover', summary: 'btn-summary', archive: 'btn-archive', audit: 'btn-audit', users: 'btn-users' };
+            ['board', 'add', 'linereport', 'handover', 'summary', 'archive', 'audit', 'users'].forEach(function(name) {
                 var btn = document.getElementById('btn-' + name);
                 if (btn) btn.classList.toggle('active', name === v);
             });
@@ -2811,6 +3112,7 @@
             document.getElementById('handover-view').style.display = v === 'handover' ? 'block' : 'none';
             document.getElementById('summary-view').className = v === 'summary' ? 'active' : '';
             document.getElementById('archive-view').style.display = v === 'archive' ? 'block' : 'none';
+            document.getElementById('audit-view').style.display = v === 'audit' ? 'block' : 'none';
             document.getElementById('users-view').style.display = v === 'users' ? 'block' : 'none';
 
             if (v === 'board') renderBoard();
@@ -2818,11 +3120,15 @@
             if (v === 'archive') renderArchive();
             if (v === 'handover') renderHandover();
             if (v === 'linereport') renderLineReport();
+            if (v === 'audit') renderAudit();
             if (v === 'users') renderUserList();
             if (v === 'add') {
                 document.getElementById('f-shift').value = getShift();
+                var now = new Date();
+                if (!document.getElementById('f-date').value) {
+                    document.getElementById('f-date').value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+                }
                 if (!document.getElementById('f-time').value) {
-                    var now = new Date();
                     document.getElementById('f-time').value = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
                 }
             }
@@ -2838,6 +3144,7 @@
             if (currentView === 'archive') renderArchive();
             if (currentView === 'handover') renderHandover();
             if (currentView === 'linereport') renderLineReport();
+            if (currentView === 'audit') renderAudit();
             if (currentView === 'users') renderUserList();
             applyRoleUI();
         }
@@ -2905,10 +3212,15 @@
             var fl = document.getElementById('fl').value;
             var fp = document.getElementById('fp').value;
             var fs = document.getElementById('fs').value;
+            var searchTerm = document.getElementById('search-input') ? document.getElementById('search-input').value.trim().toLowerCase() : '';
             var arr = taskArray().filter(function(t) {
                 if (fl && t.line !== fl) return false;
                 if (fp && t.priority !== fp) return false;
                 if (fs && t.status !== fs) return false;
+                if (searchTerm) {
+                    var combined = (t.title + ' ' + t.line + ' ' + t.category + ' ' + (t.note || '')).toLowerCase();
+                    if (combined.indexOf(searchTerm) === -1) return false;
+                }
                 return true;
             });
             arr.sort(function(a, b) { return PRIORITIES.indexOf(a.priority) - PRIORITIES.indexOf(b.priority); });
@@ -2923,7 +3235,7 @@
                 var assigned = t.assignee || 'Unassigned';
                 var shift = t.shift ? t.shift.split('(')[0].trim() : '';
                 var time = t.time || '--:--';
-                var needsRemark = t.status === 'In Progress' || t.status === 'Pending Parts' || t.status === 'Resolved';
+                var needsRemark = t.status === 'Pending Parts' || t.status === 'Resolved' || t.status === 'In Progress';
                 var hasSavedRemark = (t.partEta || t.actionNote);
                 var remarkHtml = '';
                 if (needsRemark) {
@@ -2934,19 +3246,18 @@
                             '</div>' +
                             '<button class="task-remark-save" data-id="' + t._id + '" data-edit="1">✏️ Edit remark</button>';
                     } else {
-                        var isPending = t.status === 'Pending Parts';
-                            var isResolved = t.status === 'Resolved';
-                            var isInProgress = t.status === 'In Progress';
-                            var actionLabel = isPending ? 'Temp action' : isInProgress ? 'Current action' : 'How solved';
-                            var actionPlaceholder = isPending ? 'e.g. Using spare unit temporarily' : isInProgress ? 'e.g. Adjusting feeder calibration, monitoring' : 'e.g. Replaced sensor, ran verification';
-                            remarkHtml = '<div class="task-remark-panel" id="remark-panel-' + t._id + '">' +
-                                (isPending ?
-                                    '<div class="task-remark-row"><div class="task-remark-label">Part ETA</div><textarea class="task-remark-input" id="remark-eta-' + t._id + '" placeholder="e.g. ETA Thursday 10AM, PO#1234"></textarea></div>' : '') +
-                                '<div class="task-remark-row"><div class="task-remark-label">' + actionLabel + '</div><textarea class="task-remark-input" id="remark-action-' + t._id + '" placeholder="' + actionPlaceholder + '"></textarea></div>' +
-                                '</div>' +
-                                '<button class="task-remark-save" data-id="' + t._id + '">💾 Save remark</button>';
+                        remarkHtml = '<div class="task-remark-panel" id="remark-panel-' + t._id + '">' +
+                            (t.status === 'Pending Parts' ?
+                                '<div class="task-remark-row"><div class="task-remark-label">Part ETA</div><textarea class="task-remark-input" id="remark-eta-' + t._id + '" placeholder="e.g. ETA Thursday 10AM, PO#1234"></textarea></div>' : '') +
+                            '<div class="task-remark-row"><div class="task-remark-label">' + (t.status === 'Pending Parts' ? 'Temp action' : t.status === 'In Progress' ? 'Action taken' : 'How solved') + '</div><textarea class="task-remark-input" id="remark-action-' + t._id + '" placeholder="' + (t.status === 'Pending Parts' ? 'e.g. Using spare unit temporarily' : t.status === 'In Progress' ? 'e.g. Replaced sensor, ran verification' : 'e.g. Replaced sensor, ran verification') + '"></textarea></div>' +
+                            '</div>' +
+                            '<button class="task-remark-save" data-id="' + t._id + '">💾 Save remark</button>';
                     }
                 }
+                var showAge = t.status !== 'Resolved' && !t.actionNote;
+                var ageClass = showAge ? getAgeClass(t.created) : '';
+                var ageText = showAge ? fmtAge(t.created) : '';
+                var ageHtml = ageText ? '<div class="task-age ' + ageClass + '"><div class="age-dot"></div>⏱ ' + ageText + '</div>' : '';
                 return '<div class="task-card" data-priority="' + t.priority + '" data-id="' + t._id + '">' +
                     '<div class="task-header">' +
                     '<div style="flex:1;min-width:0">' +
@@ -2957,7 +3268,8 @@
                     '</div>' +
                     '<div class="task-title">' + (CAT_ICON[t.category] || '📌') + ' ' + esc(t.title) +
                     ' <span class="toggle-arrow open">▶</span></div>' +
-                    '<div class="task-info">👷 ' + esc(assigned) + ' · 🕐 ' + esc(time) + ' · ' + esc(shift) + ' Shift</div>' +
+                    '<div class="task-info">👷 ' + esc(assigned) + (t.date ? ' · 📅 ' + esc(t.date) : (t.created ? ' · 📅 ' + esc(new Date(t.created).toISOString().slice(0,10)) : '')) + ' · 🕐 ' + esc(time) + ' · ' + esc(shift) + ' Shift</div>' +
+                    ageHtml +
                     '</div>' +
                     '<button class="task-archive' + (isTech ? ' role-restricted' : '') + '" data-id="' + t._id + '" title="Archive task">📦</button>' +
                     '</div>' +
@@ -2970,6 +3282,22 @@
                     }).join('') +
                     '</div>' +
                     remarkHtml +
+                    (function() {
+                        var comments = t.comments || {};
+                        var commentList = Object.keys(comments).map(function(cid) { return comments[cid]; })
+                            .sort(function(a, b) { return (a.time || 0) - (b.time || 0); });
+                        var count = commentList.length;
+                        return '<div class="action-history-header" data-id="' + t._id + '" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:8px 0;border-top:1px solid var(--border);margin-top:6px;font-size:11px;color:var(--muted);font-weight:600;">' +
+                            '<span class="toggle-arrow" id="ah-arrow-' + t._id + '">▶</span>' +
+                            '<span>📋 Action History (' + count + ')</span>' +
+                            '</div>' +
+                            '<div class="comment-list collapsed" id="ah-list-' + t._id + '" style="display:none;">' +
+                            (commentList.length ? commentList.map(function(c) {
+                                return '<div class="comment-item"><div class="comment-meta"><span class="c-author">' + esc(c.author) +
+                                    '</span><span>' + fmtDate(c.time) + '</span></div><div class="comment-text">' + esc(c.text) + '</div></div>';
+                            }).join('') : '<div class="comment-empty">No action history yet</div>') +
+                            '</div>';
+                    })() +
                     '</div>' +
                     '</div>';
             }).join('');
@@ -2987,6 +3315,21 @@
                 });
             });
 
+            // Action History toggle
+            document.querySelectorAll('.action-history-header').forEach(function(el) {
+                el.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var id = el.getAttribute('data-id');
+                    var list = document.getElementById('ah-list-' + id);
+                    var arrow = document.getElementById('ah-arrow-' + id);
+                    if (list) {
+                        var isHidden = list.style.display === 'none';
+                        list.style.display = isHidden ? 'block' : 'none';
+                        if (arrow) arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+                    }
+                });
+            });
+
             document.querySelectorAll('.task-archive').forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -2997,6 +3340,7 @@
                     showConfirm('Archive "' + title + '"?', 'It will be moved to the Archive tab.',
                         function() {
                             tasksRef.child(id).update({ archived: true });
+                            logAudit('archive', 'Archived: ' + title, id);
                             showToast('Issue archived 📦');
                         });
                 });
@@ -3006,10 +3350,17 @@
                     e.stopPropagation();
                     var id = btn.getAttribute('data-id');
                     var newStatus = btn.getAttribute('data-status');
-                    tasksRef.child(id).update({ status: newStatus });
+                    var oldStatus = tasks[id] ? tasks[id].status : '';
+                    var commentId = Date.now().toString();
+                    var updates = { status: newStatus };
+                    updates['comments/' + commentId] = { author: currentUser.name, text: 'Status changed from "' + oldStatus + '" to "' + newStatus + '"', time: Date.now() };
+                    tasksRef.child(id).update(updates);
+                    logAudit('status', 'Status: ' + oldStatus + ' → ' + newStatus + ' | ' + (tasks[id] ? tasks[id].title : ''), id);
                     showToast('Status → ' + newStatus);
                 });
             });
+
+
 
             // Remark save button
             document.querySelectorAll('.task-remark-save').forEach(function(btn) {
@@ -3025,16 +3376,11 @@
                         var needsEta = task && task.status === 'Pending Parts';
                         var etaVal = task ? (task.partEta || '') : '';
                         var actionVal = task ? (task.actionNote || '') : '';
-                        var isPending2 = task && task.status === 'Pending Parts';
-                            var isResolved2 = task && task.status === 'Resolved';
-                            var isInProgress2 = task && task.status === 'In Progress';
-                            var actionLabel2 = isPending2 ? 'Temp action' : isInProgress2 ? 'Current action' : 'How solved';
-                            var actionPlaceholder2 = isPending2 ? 'e.g. Using spare unit temporarily' : isInProgress2 ? 'e.g. Adjusting feeder calibration, monitoring' : 'e.g. Replaced sensor, ran verification';
-                            if (savedEl) savedEl.outerHTML =
-                                '<div class="task-remark-panel" id="remark-panel-' + id + '">' +
-                                (isPending2 ? '<div class="task-remark-row"><div class="task-remark-label">Part ETA</div><textarea class="task-remark-input" id="remark-eta-' + id + '" placeholder="e.g. ETA Thursday 10AM, PO#1234">' + esc(etaVal) + '</textarea></div>' : '') +
-                                '<div class="task-remark-row"><div class="task-remark-label">' + actionLabel2 + '</div><textarea class="task-remark-input" id="remark-action-' + id + '" placeholder="' + actionPlaceholder2 + '">' + esc(actionVal) + '</textarea></div>' +
-                                '</div>';
+                        if (savedEl) savedEl.outerHTML =
+                            '<div class="task-remark-panel" id="remark-panel-' + id + '">' +
+                            (needsEta ? '<div class="task-remark-row"><div class="task-remark-label">Part ETA</div><textarea class="task-remark-input" id="remark-eta-' + id + '" placeholder="e.g. ETA Thursday 10AM, PO#1234">' + esc(etaVal) + '</textarea></div>' : '') +
+                            '<div class="task-remark-row"><div class="task-remark-label">' + (needsEta ? 'Temp action' : 'How solved') + '</div><textarea class="task-remark-input" id="remark-action-' + id + '" placeholder="' + (needsEta ? 'e.g. Using spare unit temporarily' : 'e.g. Replaced sensor, ran verification') + '">' + esc(actionVal) + '</textarea></div>' +
+                            '</div>';
                         btn.removeAttribute('data-edit');
                         btn.textContent = '💾 Save remark';
                     } else {
@@ -3042,9 +3388,22 @@
                         var actionInput = document.getElementById('remark-action-' + id);
                         var eta = etaInput ? etaInput.value.trim() : '';
                         var action = actionInput ? actionInput.value.trim() : '';
-                        if (!eta && !action) { showToast('Add at least one remark field'); return; }
-                        tasksRef.child(id).update({ partEta: eta, actionNote: action });
-                        showToast('Remark saved ✓');
+                        // Use null to delete the field from Firebase (empty string stays truthy in hasSavedRemark check)
+                        var commentId = Date.now().toString();
+                        var updates = {
+                            partEta:    eta    || null,
+                            actionNote: action || null
+                        };
+                        var remarkText = '';
+                        var task = tasks[id];
+                        var statusLabel = task && task.status === 'In Progress' ? 'Action taken' : task && task.status === 'Pending Parts' ? 'Temp action' : 'How solved';
+                        if (eta && action) remarkText = 'Updated part ETA: "' + eta + '" and ' + statusLabel.toLowerCase() + ': "' + action + '"';
+                        else if (eta) remarkText = 'Updated part ETA: "' + eta + '"';
+                        else if (action) remarkText = 'Updated ' + statusLabel.toLowerCase() + ': "' + action + '"';
+                        else remarkText = 'Cleared remark';
+                        updates['comments/' + commentId] = { author: currentUser.name, text: remarkText, time: Date.now() };
+                        tasksRef.child(id).update(updates);
+                        showToast(eta || action ? 'Remark saved ✓' : 'Remark cleared ✓');
                     }
                 });
             });
@@ -3114,7 +3473,7 @@
                     '<div class="archive-card-actions">' +
                     '<button class="restore-btn' + (isTech ? ' role-restricted' : '') + '" data-id="' + t._id +
                     '">↩ Restore</button>' +
-                    '<button class="delete-btn' + (!can('delete') ? ' role-restricted' : '') + '" data-id="' + t
+                    '<button class="delete-btn' + (!isAdmin ? ' role-restricted' : '') + '" data-id="' + t
                     ._id + '">🗑 Delete</button>' +
                     '</div>' +
                     '</div>';
@@ -3123,7 +3482,13 @@
             document.querySelectorAll('.restore-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     if (!can('restore')) { showToast('Permission denied'); return; }
-                    tasksRef.child(btn.getAttribute('data-id')).update({ archived: false });
+                    var rid = btn.getAttribute('data-id');
+                    var rt = tasks[rid];
+                    var commentId = Date.now().toString();
+                    var updates = { archived: false };
+                    updates['comments/' + commentId] = { author: currentUser.name, text: 'Issue restored by ' + currentUser.name, time: Date.now() };
+                    tasksRef.child(rid).update(updates);
+                    logAudit('restore', 'Restored: ' + (rt ? rt.title : ''), rid);
                     showToast('Issue restored ✓');
                 });
             });
@@ -3132,7 +3497,9 @@
                     if (!can('delete')) { showToast('Permission denied'); return; }
                     var id = btn.getAttribute('data-id');
                     showConfirm('Permanently delete?', 'This cannot be undone.', function() {
+                        var dt = tasks[id];
                         tasksRef.child(id).remove();
+                        logAudit('delete', 'Deleted: ' + (dt ? dt.title : ''), id);
                         showToast('Permanently deleted');
                     });
                 });
@@ -3143,7 +3510,7 @@
         // ─── RENDER HANDOVER ──────────────────────────────────────────────
         function renderHandover() {
             var h = document.getElementById('h-shift');
-            if (h && !editingHandoverId) h.value = getShift();
+            if (h) h.value = getShift();
             var d = document.getElementById('h-date');
             if (d && !d.value) { var now = new Date();
                 d.value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now
@@ -3170,7 +3537,7 @@
                 var dt = r.created ? new Date(r.created).toLocaleString([], { month: 'short', day: 'numeric',
                     hour: '2-digit', minute: '2-digit' }) : r.date || '';
                 var editCount = r.editCount || 0;
-                var editsLeft = 3 - editCount;
+                var editsLeft = 7 - editCount;
                 var isOwner = currentName.toLowerCase() === (r.name || '').toLowerCase();
                 var editSection = '';
                 if (isOwner && editsLeft > 0) {
@@ -3222,8 +3589,6 @@
                 return;
             }
             editingHandoverId = r._id;
-            var hoBanner = document.getElementById('ho-edit-banner');
-            if (hoBanner) hoBanner.classList.add('show');
             document.getElementById('h-role').value = r.role || 'Shift Leader';
             document.getElementById('h-shift').value = r.shift || getShift();
             document.getElementById('h-date').value = r.date || '';
@@ -3244,14 +3609,12 @@
             document.getElementById('handover-form-card').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function cancelEditHandover(silent) {
+        function cancelEditHandover() {
             editingHandoverId = null;
             document.getElementById('h-submit-btn').textContent = 'Submit Handover Report →';
             document.getElementById('h-equipment').value = '';
             document.getElementById('h-openissues').value = '';
             document.getElementById('h-notes').value = '';
-            var hoBanner = document.getElementById('ho-edit-banner');
-            if (hoBanner) hoBanner.classList.remove('show');
             LINES.forEach(function(l) {
                 lineStatus[l] = 'OK';
                 document.querySelectorAll('.ls-btn[data-line="' + l + '"]').forEach(function(b) {
@@ -3259,25 +3622,33 @@
                 });
             });
             document.getElementById('h-submit-btn').disabled = false;
-            if (!silent) showToast('Edit cancelled');
+            showToast('Edit cancelled');
         }
 
         // ─── RENDER LINE REPORT ────────────────────────────────────────────
         function renderLineReport() {
             var lr = document.getElementById('lr-shift');
-            if (lr && !editingReportId) lr.value = getShift();
+            if (lr) lr.value = getShift();
             var ld = document.getElementById('lr-date');
             if (ld && !ld.value) { var now = new Date();
                 ld.value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now
                     .getDate()).padStart(2, '0'); }
 
             var arr = Object.keys(lineReports).map(function(id) { return Object.assign({}, lineReports[id], { _id: id }); });
+            var lrSearchTerm = document.getElementById('lr-search-input') ? document.getElementById('lr-search-input').value.trim().toLowerCase() : '';
+            if (lrSearchTerm) {
+                arr = arr.filter(function(r) {
+                    var combined = (r.model + ' ' + r.line + ' ' + r.name + ' ' + r.issue1 + ' ' + r.issue2 + ' ' + r.issue3 + ' ' + r.notes).toLowerCase();
+                    return combined.indexOf(lrSearchTerm) !== -1;
+                });
+            }
             arr.sort(function(a, b) { return (b.created || 0) - (a.created || 0); });
 
             var el = document.getElementById('linereport-history');
             if (!arr.length) {
+                var hasSearch = document.getElementById('lr-search-input') && document.getElementById('lr-search-input').value.trim();
                 el.innerHTML =
-                    '<div class="handover-empty"><div style="font-size:36px;margin-bottom:8px">📊</div><div>No line reports yet</div></div>';
+                    '<div class="handover-empty"><div style="font-size:36px;margin-bottom:8px">📊</div><div>' + (hasSearch ? 'No reports match your search' : 'No line reports yet') + '</div></div>';
                 return;
             }
 
@@ -3292,7 +3663,7 @@
                 var hasQuality = r.model || r.issue1 || r.issues || r.rootcause1 || r.rootcause || r.action1 || r.action;
                 var hasCT = ct.Printing || ct.SPI || ct.PP1 || ct.PP2 || ct.PP3;
                 var editCount = r.editCount || 0;
-                var editsLeft = 3 - editCount;
+                var editsLeft = 7 - editCount;
                 var isOwner = currentName.toLowerCase() === (r.name || '').toLowerCase();
                 var editSection = '';
                 if (isOwner && editsLeft > 0) {
@@ -3443,53 +3814,97 @@
             // Add task
             document.getElementById('f-title').addEventListener('input', function() {
                 document.getElementById('submit-btn').disabled = !this.value.trim();
+                var line = document.getElementById('f-line').value;
+                var title = this.value.trim();
+                var dup = checkDuplicateIssue(line, title);
+                var warn = document.getElementById('dup-warning');
+                if (dup && title.length > 5) {
+                    document.getElementById('dup-line').textContent = dup.line;
+                    warn.classList.add('show');
+                } else {
+                    warn.classList.remove('show');
+                }
             });
+            document.getElementById('f-line').addEventListener('change', function() {
+                var title = document.getElementById('f-title').value.trim();
+                var dup = checkDuplicateIssue(this.value, title);
+                var warn = document.getElementById('dup-warning');
+                if (dup && title.length > 5) {
+                    document.getElementById('dup-line').textContent = dup.line;
+                    warn.classList.add('show');
+                } else {
+                    warn.classList.remove('show');
+                }
+            });
+            document.getElementById('dup-dismiss').addEventListener('click', function() {
+                document.getElementById('dup-warning').classList.remove('show');
+            });
+            var submitDebounced = false;
             document.getElementById('submit-btn').addEventListener('click', function() {
+                if (submitDebounced) return;
+                submitDebounced = true;
+                setTimeout(function() { submitDebounced = false; }, 300);
                 var title = document.getElementById('f-title').value.trim();
                 if (!title) return;
                 if (!currentUser) { showToast('Not logged in'); return; }
-                tasksRef.push({
+                var newTaskRef = tasksRef.push({
                     line: document.getElementById('f-line').value,
                     category: document.getElementById('f-cat').value,
                     priority: document.getElementById('f-priority').value,
                     status: document.getElementById('f-status').value,
-                    title: title,
+                    title: sanitizeFirebase(title),
                     assignee: currentUser.name,
+                    date: document.getElementById('f-date').value,
                     time: document.getElementById('f-time').value,
                     shift: document.getElementById('f-shift').value,
-                    note: document.getElementById('f-note').value.trim(),
+                    note: sanitizeFirebase(document.getElementById('f-note').value.trim()),
                     created: Date.now()
                 });
+                var commentId = Date.now().toString();
+                var commentUpdates = {};
+                commentUpdates['comments/' + commentId] = { author: currentUser.name, text: 'Issue created — Status: "' + document.getElementById('f-status').value + '"', time: Date.now() };
+                newTaskRef.update(commentUpdates);
+                logAudit('create', 'Created: ' + title, newTaskRef.key);
                 document.getElementById('f-title').value = '';
                 document.getElementById('f-note').value = '';
+                document.getElementById('f-date').value = '';
                 document.getElementById('submit-btn').disabled = true;
+                document.getElementById('dup-warning').classList.remove('show');
                 switchView('board');
                 showToast('Issue logged ✓');
             });
 
             // Handover submit
+            var handoverDebounced = false;
             document.getElementById('h-submit-btn').addEventListener('click', function() {
+                if (handoverDebounced) return;
+                handoverDebounced = true;
+                setTimeout(function() { handoverDebounced = false; }, 300);
                 if (!currentUser) { showToast('Not logged in'); return; }
                 if (editingHandoverId) {
                     var original = handovers[editingHandoverId];
                     if (!original) { showToast('Report not found'); return; }
+                    if ((original.editCount || 0) >= 7) { showToast('Edit limit reached — no more edits allowed'); return; }
+                    // Note: Edit limits are enforced client-side. For production, enforce via Firebase Security Rules.
+                    // Note: Edit limits are enforced client-side. For production, enforce via Firebase Security Rules.
                     var name = original.name;
                     var data = {
-                        name: name,
+                        name: sanitizeFirebase(name),
                         role: document.getElementById('h-role').value,
                         shift: document.getElementById('h-shift').value,
                         date: document.getElementById('h-date').value,
                         lineStatus: lineStatus,
-                        equipment: document.getElementById('h-equipment').value.trim(),
-                        openIssues: document.getElementById('h-openissues').value.trim() || '',
-                        notes: document.getElementById('h-notes').value.trim() || ''
+                        equipment: sanitizeFirebase(document.getElementById('h-equipment').value.trim()),
+                        openIssues: sanitizeFirebase(document.getElementById('h-openissues').value.trim() || ''),
+                        notes: sanitizeFirebase(document.getElementById('h-notes').value.trim() || '')
                     };
                     var editCount = (original.editCount || 0) + 1;
                     data.created = original.created || Date.now();
                     data.editCount = editCount;
                     data.lastEdited = Date.now();
                     handoverRef.child(editingHandoverId).set(data);
-                    showToast('Handover updated (edit ' + editCount + '/3) ✓');
+                    logAudit('edit', 'Edited handover report', editingHandoverId);
+                    showToast('Handover updated (edit ' + editCount + '/7) ✓');
                     cancelEditHandover();
                     renderHandover();
                 } else {
@@ -3499,14 +3914,14 @@
                         t.title + ' [' + t.status + ']'; }).join('\n') : '';
                     var manualCarried = document.getElementById('h-openissues').value.trim();
                     handoverRef.push({
-                        name: name,
+                        name: sanitizeFirebase(name),
                         role: document.getElementById('h-role').value,
                         shift: document.getElementById('h-shift').value,
                         date: document.getElementById('h-date').value,
                         lineStatus: lineStatus,
-                        equipment: document.getElementById('h-equipment').value.trim(),
-                        openIssues: manualCarried || autoCarried,
-                        notes: document.getElementById('h-notes').value.trim(),
+                        equipment: sanitizeFirebase(document.getElementById('h-equipment').value.trim()),
+                        openIssues: sanitizeFirebase(manualCarried || autoCarried),
+                        notes: sanitizeFirebase(document.getElementById('h-notes').value.trim()),
                         created: Date.now(),
                         editCount: 0
                     });
@@ -3526,17 +3941,46 @@
             // ─── LINE REPORT VALIDATION ──────────────────────────────────────────
         function validateLineReportIssues() {
             var issues = [
-                { name: 'lr-issue1', rc: 'lr-rootcause1', ac: 'lr-action1', row: 0 },
-                { name: 'lr-issue2', rc: 'lr-rootcause2', ac: 'lr-action2', row: 1 },
-                { name: 'lr-issue3', rc: 'lr-rootcause3', ac: 'lr-action3', row: 2 }
+                { name: 'lr-issue1', loc: 'lr-loc1', qty: 'lr-qty1', rc: 'lr-rootcause1', ac: 'lr-action1', row: 0 },
+                { name: 'lr-issue2', loc: 'lr-loc2', qty: 'lr-qty2', rc: 'lr-rootcause2', ac: 'lr-action2', row: 1 },
+                { name: 'lr-issue3', loc: 'lr-loc3', qty: 'lr-qty3', rc: 'lr-rootcause3', ac: 'lr-action3', row: 2 }
             ];
             var errEl = document.getElementById('lr-issue-error');
             var rows = document.querySelectorAll('.issue-card-row');
             var errors = [];
 
-            // Clear previous error states
-            document.querySelectorAll('.issue-name-input, .issue-rca-input').forEach(function(el) { el.classList.remove('has-error'); });
+            // Clear previous error states (must happen before any checks add classes)
+            document.querySelectorAll('.issue-name-input, .issue-rca-input, .issue-meta-input').forEach(function(el) { el.classList.remove('has-error'); });
             rows.forEach(function(el) { el.classList.remove('has-error'); });
+            var modelEl = document.getElementById('lr-model');
+            if (modelEl) modelEl.classList.remove('has-error');
+
+            // ── Check model is filled ──
+            var reportModel = sanitizeFirebase(document.getElementById('lr-model').value.trim());
+            if (!reportModel) {
+                errors.push('Model is required.');
+                document.getElementById('lr-model').classList.add('has-error');
+            }
+
+            // ── Check date/shift: cannot submit for next shift or next day ──
+            var reportDate = document.getElementById('lr-date').value;
+            var reportShift = document.getElementById('lr-shift').value;
+            var now = new Date();
+            var todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+            var h = now.getHours();
+            var currentShift = '';
+            if (h >= 7 && h < 15) currentShift = 'Shift 1 (7AM-3PM)';
+            else if (h >= 15 && h < 23) currentShift = 'Shift 2 (3PM-11PM)';
+            else currentShift = 'Shift 3 (11PM-7AM)';
+
+            if (reportDate > todayStr) {
+                errors.push('Cannot submit a report for a future date.');
+            } else if (reportDate === todayStr) {
+                var shiftOrder = ['Shift 1 (7AM-3PM)', 'Shift 2 (3PM-11PM)', 'Shift 3 (11PM-7AM)'];
+                if (shiftOrder.indexOf(reportShift) > shiftOrder.indexOf(currentShift)) {
+                    errors.push('Cannot submit a report for a future shift.');
+                }
+            }
 
             // Must have at least issue #1 filled
             var hasAny = issues.some(function(i) { return document.getElementById(i.name).value.trim(); });
@@ -3546,22 +3990,39 @@
                 document.getElementById('lr-issue1').classList.add('has-error');
             }
 
-            // Any filled issue must have name + root cause + corrective action
+            // Any filled issue must have name + loc + qty + root cause + corrective action
             issues.forEach(function(i, idx) {
                 var nameVal = document.getElementById(i.name).value.trim();
+                var locVal = document.getElementById(i.loc).value.trim();
+                var qtyVal = document.getElementById(i.qty).value.trim();
                 var rcVal = document.getElementById(i.rc).value.trim();
                 var acVal = document.getElementById(i.ac).value.trim();
-                var anyFilled = nameVal || rcVal || acVal;
+                var anyFilled = nameVal || locVal || qtyVal || rcVal || acVal;
                 if (anyFilled) {
                     var missing = [];
                     if (!nameVal) { missing.push('defect name'); document.getElementById(i.name).classList.add('has-error'); rows[idx].classList.add('has-error'); }
-                    if (!rcVal)   { missing.push('root cause');   document.getElementById(i.rc).classList.add('has-error'); }
+                    if (!locVal)  { missing.push('location'); document.getElementById(i.loc).classList.add('has-error'); rows[idx].classList.add('has-error'); }
+                    if (!qtyVal)  { missing.push('quantity'); document.getElementById(i.qty).classList.add('has-error'); rows[idx].classList.add('has-error'); }
+                    if (!rcVal)   { missing.push('root cause'); document.getElementById(i.rc).classList.add('has-error'); }
                     if (!acVal)   { missing.push('corrective action'); document.getElementById(i.ac).classList.add('has-error'); }
                     if (missing.length) {
                         errors.push('Issue #' + (idx + 1) + ': missing ' + missing.join(', ') + '.');
                     }
                 }
             });
+
+            // ── ALL CT fields are required ──
+            var ctFields = ['lr-ct-printing', 'lr-ct-spi', 'lr-ct-pp1', 'lr-ct-pp2', 'lr-ct-pp3'];
+            var ctMissing = [];
+            ctFields.forEach(function(id) {
+                if (!document.getElementById(id).value.trim()) {
+                    ctMissing.push(id.replace('lr-ct-', '').toUpperCase());
+                    document.getElementById(id).classList.add('has-error');
+                }
+            });
+            if (ctMissing.length) {
+                errors.push('Machine Cycle Time required for: ' + ctMissing.join(', ') + '.');
+            }
 
             if (errors.length) {
                 errEl.textContent = '⚠️ ' + errors.join(' ');
@@ -3575,34 +4036,71 @@
         }
 
         // Line Report submit
+            var lrDebounced = false;
             document.getElementById('lr-submit-btn').addEventListener('click', function() {
+                if (lrDebounced) return;
+                lrDebounced = true;
+                setTimeout(function() { lrDebounced = false; }, 300);
                 if (!currentUser) { showToast('Not logged in'); return; }
                 if (!validateLineReportIssues()) return;
+                if (!editingReportId) {
+                    var dup = checkDuplicateLineReport(
+                        document.getElementById('lr-line').value,
+                        document.getElementById('lr-date').value,
+                        document.getElementById('lr-shift').value,
+                        sanitizeFirebase(document.getElementById('lr-model').value.trim())
+                    );
+                    if (dup) {
+                        showConfirm('Report already exists', 'A report for this model, line, date and shift already exists. Edit it instead?', function() {
+                            startEditLineReport(dup);
+                        });
+                        // Temporarily override confirm button for edit context
+                        var origYes = document.getElementById('confirm-yes');
+                        var originalText = origYes.textContent;
+                        var originalBg = origYes.style.background;
+                        origYes.textContent = 'Edit ✏️';
+                        origYes.style.background = 'var(--accent)';
+                        var restored = false;
+                        var restoreBtn = function() {
+                            if (restored) return;
+                            restored = true;
+                            origYes.textContent = originalText;
+                            origYes.style.background = originalBg;
+                            document.getElementById('confirm-overlay').removeEventListener('transitionend', restoreBtn);
+                        };
+                        document.getElementById('confirm-overlay').addEventListener('transitionend', restoreBtn);
+                        setTimeout(restoreBtn, 500); // Fallback: overlay has no CSS transition
+                        return;
+                    }
+                }
                 if (editingReportId) {
                     var original = lineReports[editingReportId];
                     if (!original) { showToast('Report not found'); return; }
+                    if ((original.editCount || 0) >= 7) { showToast('Edit limit reached — no more edits allowed'); return; }
+                    // Note: Edit limits are enforced client-side. For production, enforce via Firebase Security Rules.
+                    // Note: Edit limits are enforced client-side. For production, enforce via Firebase Security Rules.
                     var name = original.name;
                     var data = {
                         name: name,
                         line: document.getElementById('lr-line').value,
                         shift: document.getElementById('lr-shift').value,
                         date: document.getElementById('lr-date').value,
-                        model: document.getElementById('lr-model').value.trim(),
-                        issue1: document.getElementById('lr-issue1').value.trim(),
-                        loc1: document.getElementById('lr-loc1').value.trim(),
+                        model: sanitizeFirebase(document.getElementById('lr-model').value.trim()),
+                        issue1: sanitizeFirebase(document.getElementById('lr-issue1').value.trim()),
+                        loc1: sanitizeFirebase(document.getElementById('lr-loc1').value.trim()),
                         qty1: document.getElementById('lr-qty1').value || '',
-                        rootcause1: document.getElementById('lr-rootcause1').value.trim(),
-                        action1: document.getElementById('lr-action1').value.trim(),
-                        issue2: document.getElementById('lr-issue2').value.trim(),
-                        loc2: document.getElementById('lr-loc2').value.trim(),
+                        rootcause1: sanitizeFirebase(document.getElementById('lr-rootcause1').value.trim()),
+                        action1: sanitizeFirebase(document.getElementById('lr-action1').value.trim()),
+                        issue2: sanitizeFirebase(document.getElementById('lr-issue2').value.trim()),
+                        loc2: sanitizeFirebase(document.getElementById('lr-loc2').value.trim()),
                         qty2: document.getElementById('lr-qty2').value || '',
-                        rootcause2: document.getElementById('lr-rootcause2').value.trim(),
-                        action2: document.getElementById('lr-action2').value.trim(),
-                        issue3: document.getElementById('lr-issue3').value.trim(),
-                        loc3: document.getElementById('lr-loc3').value.trim(),
+                        rootcause2: sanitizeFirebase(document.getElementById('lr-rootcause2').value.trim()),
+                        action2: sanitizeFirebase(document.getElementById('lr-action2').value.trim()),
+                        issue3: sanitizeFirebase(document.getElementById('lr-issue3').value.trim()),
+                        loc3: sanitizeFirebase(document.getElementById('lr-loc3').value.trim()),
                         qty3: document.getElementById('lr-qty3').value || '',
-                        rootcause3: document.getElementById('lr-rootcause3').value.trim(),
-                        action3: document.getElementById('lr-action3').value.trim(),
+                        rootcause3: sanitizeFirebase(document.getElementById('lr-rootcause3').value.trim()),
+                        action3: sanitizeFirebase(document.getElementById('lr-action3').value.trim()),
                         ct: {
                             Printing: document.getElementById('lr-ct-printing').value || '',
                             SPI: document.getElementById('lr-ct-spi').value || '',
@@ -3610,14 +4108,15 @@
                             PP2: document.getElementById('lr-ct-pp2').value || '',
                             PP3: document.getElementById('lr-ct-pp3').value || ''
                         },
-                        notes: document.getElementById('lr-notes').value.trim()
+                        notes: sanitizeFirebase(document.getElementById('lr-notes').value.trim())
                     };
                     var editCount = (original.editCount || 0) + 1;
                     data.created = original.created || Date.now();
                     data.editCount = editCount;
                     data.lastEdited = Date.now();
                     lineReportRef.child(editingReportId).set(data);
-                    showToast('Report updated (edit ' + editCount + '/3) ✓');
+                    logAudit('edit', 'Edited line report', editingReportId);
+                    showToast('Report updated (edit ' + editCount + '/7) ✓');
                     cancelEditLineReport();
                     renderLineReport();
                 } else {
@@ -3627,22 +4126,22 @@
                         line: document.getElementById('lr-line').value,
                         shift: document.getElementById('lr-shift').value,
                         date: document.getElementById('lr-date').value,
-                        model: document.getElementById('lr-model').value.trim(),
-                        issue1: document.getElementById('lr-issue1').value.trim(),
-                        loc1: document.getElementById('lr-loc1').value.trim(),
+                        model: sanitizeFirebase(document.getElementById('lr-model').value.trim()),
+                        issue1: sanitizeFirebase(document.getElementById('lr-issue1').value.trim()),
+                        loc1: sanitizeFirebase(document.getElementById('lr-loc1').value.trim()),
                         qty1: document.getElementById('lr-qty1').value || '',
-                        rootcause1: document.getElementById('lr-rootcause1').value.trim(),
-                        action1: document.getElementById('lr-action1').value.trim(),
-                        issue2: document.getElementById('lr-issue2').value.trim(),
-                        loc2: document.getElementById('lr-loc2').value.trim(),
+                        rootcause1: sanitizeFirebase(document.getElementById('lr-rootcause1').value.trim()),
+                        action1: sanitizeFirebase(document.getElementById('lr-action1').value.trim()),
+                        issue2: sanitizeFirebase(document.getElementById('lr-issue2').value.trim()),
+                        loc2: sanitizeFirebase(document.getElementById('lr-loc2').value.trim()),
                         qty2: document.getElementById('lr-qty2').value || '',
-                        rootcause2: document.getElementById('lr-rootcause2').value.trim(),
-                        action2: document.getElementById('lr-action2').value.trim(),
-                        issue3: document.getElementById('lr-issue3').value.trim(),
-                        loc3: document.getElementById('lr-loc3').value.trim(),
+                        rootcause2: sanitizeFirebase(document.getElementById('lr-rootcause2').value.trim()),
+                        action2: sanitizeFirebase(document.getElementById('lr-action2').value.trim()),
+                        issue3: sanitizeFirebase(document.getElementById('lr-issue3').value.trim()),
+                        loc3: sanitizeFirebase(document.getElementById('lr-loc3').value.trim()),
                         qty3: document.getElementById('lr-qty3').value || '',
-                        rootcause3: document.getElementById('lr-rootcause3').value.trim(),
-                        action3: document.getElementById('lr-action3').value.trim(),
+                        rootcause3: sanitizeFirebase(document.getElementById('lr-rootcause3').value.trim()),
+                        action3: sanitizeFirebase(document.getElementById('lr-action3').value.trim()),
                         ct: {
                             Printing: document.getElementById('lr-ct-printing').value || '',
                             SPI: document.getElementById('lr-ct-spi').value || '',
@@ -3650,7 +4149,7 @@
                             PP2: document.getElementById('lr-ct-pp2').value || '',
                             PP3: document.getElementById('lr-ct-pp3').value || ''
                         },
-                        notes: document.getElementById('lr-notes').value.trim(),
+                        notes: sanitizeFirebase(document.getElementById('lr-notes').value.trim()),
                         created: Date.now(),
                         editCount: 0
                     };
@@ -3669,8 +4168,26 @@
                 }
             });
 
-            // Handover edit cancel
-            document.getElementById('ho-cancel-edit').addEventListener('click', cancelEditHandover);
+            // Line report search
+            var lrSearchInput = document.getElementById('lr-search-input');
+            if (lrSearchInput) {
+                lrSearchInput.addEventListener('input', function() {
+                    if (currentView === 'linereport') renderLineReport();
+                });
+            }
+
+            // Audit log filters
+            ['audit-filter-type', 'audit-filter-user', 'audit-filter-date'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.addEventListener('change', renderAudit);
+            });
+            var auditClear = document.getElementById('audit-clear-filters');
+            if (auditClear) auditClear.addEventListener('click', function() {
+                document.getElementById('audit-filter-type').value = '';
+                document.getElementById('audit-filter-user').value = '';
+                document.getElementById('audit-filter-date').value = '';
+                renderAudit();
+            });
 
             // User management
             document.getElementById('add-user-btn').addEventListener('click', function() {
@@ -3692,7 +4209,7 @@
                         return;
                     }
                     return usersRef.child(badge).set({
-                        name: name,
+                        name: sanitizeFirebase(name),
                         role: role
                     }).then(function() {
                         msgEl.textContent = '✅ User added!';
@@ -3709,6 +4226,61 @@
         }
 
         // ─── RENDER USER LIST ───────────────────────────────────────────────
+        // ─── RENDER AUDIT LOG ───────────────────────────────────────────────
+        function renderAudit() {
+            var typeFilter = document.getElementById('audit-filter-type').value;
+            var userFilter = document.getElementById('audit-filter-user').value;
+            var dateFilter = document.getElementById('audit-filter-date').value;
+            auditRef.orderByChild('timestamp').limitToLast(500).once('value').then(function(snap) {
+                var data = snap.val() || {};
+                var rows = Object.keys(data).map(function(id) { return Object.assign({}, data[id], { _id: id }); })
+                    .sort(function(a, b) { return (b.timestamp || 0) - (a.timestamp || 0); });
+                if (typeFilter) rows = rows.filter(function(r) { return r.action === typeFilter; });
+                if (userFilter) rows = rows.filter(function(r) { return r.user === userFilter; });
+                if (dateFilter) {
+                    var d = new Date(dateFilter);
+                    var start = d.getTime();
+                    var end = start + 86400000;
+                    rows = rows.filter(function(r) { return r.timestamp >= start && r.timestamp < end; });
+                }
+                var tbody = document.getElementById('audit-tbody');
+                var empty = document.getElementById('audit-empty');
+                var table = document.getElementById('audit-table');
+                if (!rows.length) {
+                    tbody.innerHTML = '';
+                    table.style.display = 'none';
+                    empty.style.display = 'block';
+                    return;
+                }
+                table.style.display = 'table';
+                empty.style.display = 'none';
+                var badgeClass = { create: 'audit-create', status: 'audit-status', archive: 'audit-archive',
+                    restore: 'audit-restore', delete: 'audit-delete', edit: 'audit-edit', comment: 'audit-comment' };
+                tbody.innerHTML = rows.slice(0, 200).map(function(r) {
+                    return '<tr>' +
+                        '<td>' + fmtDate(r.timestamp) + '</td>' +
+                        '<td>' + esc(r.user) + '</td>' +
+                        '<td><span class="audit-badge ' + (badgeClass[r.action] || '') + '">' + esc(r.action) + '</span></td>' +
+                        '<td>' + esc(r.details) + '</td>' +
+                        '</tr>';
+                }).join('');
+            });
+        }
+
+        function populateAuditUserFilter() {
+            var sel = document.getElementById('audit-filter-user');
+            if (!sel) return;
+            var currentVal = sel.value;
+            usersRef.once('value').then(function(snap) {
+                var data = snap.val() || {};
+                var users = Object.values(data).map(function(u) { return u.name; }).filter(Boolean).sort();
+                var unique = [''].concat(users.filter(function(u, i, a) { return a.indexOf(u) === i; }));
+                sel.innerHTML = unique.map(function(u) {
+                    return '<option value="' + esc(u) + '"' + (u === currentVal ? ' selected' : '') + '>' + (u || 'All Users') + '</option>';
+                }).join('');
+            });
+        }
+
         function renderUserList() {
             if (!isAdmin()) {
                 document.getElementById('user-list').innerHTML =
@@ -3757,7 +4329,6 @@
 
         // ─── EXPORT FUNCTIONS ───────────────────────────────────────────────
         document.getElementById('btn-export-issues').addEventListener('click', function() {
-            if (!can('export')) { showToast('Permission denied'); return; }
             var range = getDateRange('exp-from', 'exp-to');
             var allTasks = Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); });
             var filtered = allTasks.filter(function(t) {
@@ -3779,6 +4350,7 @@
                     'Status': t.status || '',
                     'Title': t.title || '',
                     'Assigned To': t.assignee || '',
+                    'Date Found': t.date || '',
                     'Time Found': t.time || '',
                     'Notes': t.note || '',
                     'Part ETA': t.partEta || '',
@@ -3794,7 +4366,6 @@
         });
 
         document.getElementById('btn-export-summary').addEventListener('click', function() {
-            if (!can('export')) { showToast('Permission denied'); return; }
             var range = getDateRange('exp-from', 'exp-to');
             var allTasks = Object.keys(tasks).map(function(id) { return Object.assign({}, tasks[id], { _id: id }); });
             var filtered = allTasks.filter(function(t) {
@@ -3862,7 +4433,6 @@
         });
 
         document.getElementById('btn-export-handover').addEventListener('click', function() {
-            if (!can('export')) { showToast('Permission denied'); return; }
             var range = getDateRange('hexp-from', 'hexp-to');
             var arr = Object.keys(handovers).map(function(id) { return Object.assign({}, handovers[id], { _id: id }); });
             var filtered = arr.filter(function(r) {
@@ -3900,7 +4470,6 @@
         });
 
         document.getElementById('btn-export-linereport').addEventListener('click', function() {
-            if (!can('export')) { showToast('Permission denied'); return; }
             var range = getDateRange('lrexp-from', 'lrexp-to');
             var arr = Object.keys(lineReports).map(function(id) { return Object.assign({}, lineReports[id], { _id: id }); });
             var filtered = arr.filter(function(r) {
@@ -3991,6 +4560,8 @@
         }
 
         console.log('✅ SMT Report Center – CSS fully loaded, compact layout active.');
+        console.log('🔒 Security: Ensure Firebase Security Rules are deployed. See documentation.');
+        console.log('💾 Backup: Enable Firebase automated backups (Blaze plan) for production data.');
     </script>
 </body>
 </html>
